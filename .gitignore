@@ -12,6 +12,7 @@ Question_Bank.tex
 check.*
 check_gpt.py
 *.ipynb
+solutions/**/*.tex
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
