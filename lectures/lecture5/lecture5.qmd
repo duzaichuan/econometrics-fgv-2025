@@ -48,9 +48,9 @@ where $\phi(L) = 1 - \phi_1 L - \ldots - \phi_p L^p$ and $\theta(L) = 1 + \theta
 
 - If the roots of $\phi(L)$ are outside of the unit circle, then $\phi^{-1}(L)$ is well-defined;
 - We can invert $\phi(L)$ to get:
-$$y_t = \frac{\mu}{1 - \phi_1 - \ldots - \phi_p} +  \theta(L) \varepsilon_t = \frac{\mu}{1 - \phi_1 L - \ldots - \phi_p L^p} + \psi(L) \varepsilon_t$$
+$$y_t = \frac{\mu}{1 - \phi_1 - \ldots - \phi_p} +  \phi^{-1}(L)\theta(L) \varepsilon_t = \frac{\mu}{1 - \phi_1 L - \ldots - \phi_p L^p} + \psi(L) \varepsilon_t$$
 
-where $\psi(L) = \theta(L) \phi^{-1}(L)$;
+where $\psi(L) = \phi^{-1}(L)\theta(L)$;
 
 - The stationarity of $y_t$ depends only on the roots of $\phi(L)$, not on the roots of $\theta(L)$;
 
