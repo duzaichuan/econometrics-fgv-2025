@@ -46,9 +46,9 @@ where $\phi(L) = 1 - \phi_1 L - \ldots - \phi_p L^p$ and $\theta(L) = 1 + \theta
 
 ## When is an ARMA$(p,q)$ stationary?
 
-- If the roots of $\phi(L)$ are outside of the unit circle, then $\phi^{-1}(L)$ is well-defined;
+- If the roots of $\phi(L)$ are outside the unit circle, then $\phi^{-1}(L)$ is well-defined;
 - We can invert $\phi(L)$ to get:
-$$y_t = \frac{\mu}{1 - \phi_1 - \ldots - \phi_p} +  \phi^{-1}(L)\theta(L) \varepsilon_t = \frac{\mu}{1 - \phi_1 L - \ldots - \phi_p L^p} + \psi(L) \varepsilon_t$$
+$$y_t = \frac{\mu}{1 - \phi_1 - \ldots - \phi_p} +  \phi^{-1}(L)\theta(L) \varepsilon_t = \frac{\mu}{1 - \phi_1 - \ldots - \phi_p} + \psi(L) \varepsilon_t$$
 
 where $\psi(L) = \phi^{-1}(L)\theta(L)$;
 
@@ -111,7 +111,7 @@ simulated_data = arma_process.generate_sample(nsample=n_samples, burnin=200)
 plt.figure(figsize=(6.5, 3))
 plt.plot(simulated_data, lw=0.5)
 plt.grid(True, alpha=0.3)
-plt.title('Simulated ARMA(1,3) Process')
+plt.title('Simulated ARMA(1,4) Process')
 plt.show()
 ```
 
@@ -213,9 +213,9 @@ Now we can solve this linear system!
 . . .
 
 - In fact, ARMA models can be _overparameterized_;
-- Remember that we can always factor the lag polynomials:
-$$\phi(L) = (1 - \phi_1 L)(1 - \phi_2 L) \ldots (1 - \phi_p L)$$
-$$\theta(L) = (1 + \theta_1 L)(1 + \theta_2 L) \ldots (1 + \theta_q L)$$ 
+- Remember that we can always factor the lag polynomials using their roots $r_{i}$ and $s_i$:
+$$\phi(L) = (1 - r_1 L)(1 - r_2 L) \ldots (1 - r_p L)$$
+$$\theta(L) = (1 + s_1 L)(1 + s_2 L) \ldots (1 + s_q L)$$
 
 . . .
 
@@ -310,7 +310,7 @@ $$
 
 ## Example: AR(1)
 
-- Assume that $(1-\phi L)y_t = \varepsilon_t$ with $|\phi| < 1$;
+- Assume that $(1-\phi L)(y_t - \mu) = \varepsilon_t$ with $|\phi| < 1$;
 - Then we know that $\psi(L) = \phi(L)^{-1} = 1 + \phi L + \phi^2 L^2 + \ldots$ and $\eta(L) = \phi(L) = 1 - \phi L$;
 
 . . .
@@ -375,8 +375,8 @@ $$y_t - \mu = \phi_1(y_{t-1} - \mu) + \ldots + \phi_p(y_{t-p} - \mu) + \varepsil
 
 . . .
 
-- Main trick: use the equatio above to back out a series of "estimated" shocks $\hat{\varepsilon}_t$;
-- Assume that $\varepsilon_t = 0$ for $t \leq$ (before the sample);
+- Main trick: use the equation above to back out a series of "estimated" shocks $\hat{\varepsilon}_t$;
+- Assume that $\varepsilon_t = 0$ for $t \leq 0$ (before the sample);
 - Also assume that $y_t = \mathbb{E}[y_t] = \mu$ for $t \leq 0$ (before the sample);
 
 ## How to approximate the forecasts
