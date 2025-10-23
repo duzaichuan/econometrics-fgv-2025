@@ -377,6 +377,211 @@ $$
 
 # Some Simulations
 
+## The ARMA(1,1) Case - Simulated Path ($\phi=0.5$, $\theta=0.2$)
+Let's say we have an ARMA(1,1), with $\mu = 0$ and $\sigma^2 = 1$. Let's simulate one path:
+
+```{python}
+#| fig-align: center
+# ====== Helpers (defined once; reused across cells) ======
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import minimize
+plt.rcParams['font.family'] = 'Arial'
+
+def simulate_arma11(phi: float, theta: float, T: int, seed: int | None = None):
+    """Simulate ARMA(1,1): y_t = phi*y_{t-1} + e_t + theta*e_{t-1}, e_t ~ N(0,1)."""
+    if seed is not None:
+        np.random.seed(seed)
+    eps = np.random.normal(size=T + 1)
+    y = np.zeros(T + 1)
+    for t in range(1, T + 1):
+        y[t] = phi * y[t - 1] + eps[t] + theta * eps[t - 1]
+    return y[1:]  # drop initial zero
+
+def cond_loglik(phi: float, theta: float, y: np.ndarray):
+    """Conditional log-likelihood up to a constant (sigma^2 profiled out)."""
+    T = len(y)
+    eps_hat = np.zeros(T)
+    for t in range(1, T):
+        eps_hat[t] = y[t] - phi * y[t - 1] - theta * eps_hat[t - 1]
+    return -0.5 * np.sum(eps_hat[1:] ** 2)
+
+def cond_loglik_grid(y: np.ndarray, phi_grid: np.ndarray, theta_grid: np.ndarray):
+    """Evaluate conditional log-likelihood on a parameter grid."""
+    L = np.zeros((len(phi_grid), len(theta_grid)))
+    for i, phi in enumerate(phi_grid):
+        for j, theta in enumerate(theta_grid):
+            L[i, j] = cond_loglik(phi, theta, y)
+    Phi, Theta = np.meshgrid(phi_grid, theta_grid, indexing="ij")
+    return Phi, Theta, L
+
+def _z_at(phi, theta, Z, phi_grid, theta_grid):
+    """Nearest-grid Z value for a given (phi, theta) pair (for 3D scatter height)."""
+    i = np.argmin(np.abs(phi_grid - phi))
+    j = np.argmin(np.abs(theta_grid - theta))
+    return Z[i, j]
+
+def estimate_mle(y: np.ndarray, phi_true: float, theta_true: float,
+                 starts: list[tuple[float, float]] | None = None,
+                 bounds: tuple[tuple[float, float], tuple[float, float]] = ((-0.98, 0.98), (-0.98, 0.98))):
+    """
+    Estimate (phi, theta) by maximizing conditional log-likelihood.
+    """
+    def neg_ll(params):
+        phi, theta = params
+        if not (bounds[0][0] < phi < bounds[0][1] and bounds[1][0] < theta < bounds[1][1]):
+            return 1e9
+        return -cond_loglik(phi, theta, y)
+
+    # default starts
+    if starts is None:
+        starts = [(0.0, 0.0), (0.5, 0.5), (-0.3, 0.6), (0.6, -0.3), (phi_true, theta_true)]
+
+    best_val, best_xy = np.inf, None
+    for s in starts:
+        res = minimize(neg_ll, x0=np.array(s, dtype=float), method="L-BFGS-B", bounds=bounds,
+                       options={"maxiter": 2000})
+        if res.fun < best_val:
+            best_val, best_xy = res.fun, res.x
+    return float(best_xy[0]), float(best_xy[1])
+
+def plot_likelihood_analysis(T: int, phi_true: float, theta_true: float, seed: int = 123):
+    """Complete likelihood analysis: simulate, estimate, and plot for given sample size."""
+    # Simulate data
+    y = simulate_arma11(phi_true, theta_true, T, seed=seed)
+    
+    # Grid and likelihood surface
+    phi_grid = np.linspace(-0.4, 0.9, 20)
+    theta_grid = np.linspace(-0.4, 0.9, 20)
+    Phi, Theta, L = cond_loglik_grid(y, phi_grid, theta_grid)
+    
+    # Estimate (phi, theta)
+    phi_hat, theta_hat = estimate_mle(y, phi_true, theta_true)
+    
+    # Build normalized surface for plotting with markers
+    L_norm = L - np.max(L)
+    
+    # Figure with overlays
+    fig = plt.figure(figsize=(10, 4))
+    
+    # 3D surface with markers
+    ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+    surf = ax1.plot_surface(Theta, Phi, L_norm, cmap='viridis', alpha=1, edgecolor='gray')
+    plt.subplots_adjust(hspace=0.25)
+    plt.grid(alpha=0.3)
+    ax1.set_xlabel(r"$\theta$")
+    ax1.set_ylabel(r"$\phi$")
+    ax1.set_title("3D Likelihood")
+    ax1.view_init(elev=35, azim=130)
+    
+    # Contour with markers
+    ax2 = fig.add_subplot(1, 2, 2)
+    cs = ax2.contourf(Theta, Phi, L_norm, levels=30, cmap='viridis')
+    ax2.set_xlabel(r"$\theta$")
+    ax2.set_ylabel(r"$\phi$")
+    ax2.set_title(f"Contour: True vs MLE (T={T})")
+    ax2.scatter(theta_true, phi_true, s=150, color='red', edgecolors='white', 
+                linewidths=1.5, label=r"True ($\phi, \theta$)", zorder=10)
+    ax2.scatter(theta_hat,  phi_hat,  s=250, color='gold', marker='*', 
+                edgecolors='black', linewidths=1.5, label=r"MLE ($\hat{\phi}, \hat{\theta}$)", zorder=10)
+    ax2.legend(loc='lower left')
+    fig.colorbar(cs, ax=ax2, shrink=0.7)
+    
+    plt.tight_layout()
+    plt.show()
+
+# Parameters
+phi_true, theta_true = 0.5, 0.2
+
+# Simulate and plot path for T=100
+T = 100
+y = simulate_arma11(phi_true, theta_true, T, seed=123)
+plt.figure(figsize=(7, 3))
+plt.plot(y, label='Simulated ARMA(1,1) Process')
+plt.grid(alpha=0.3)
+plt.gca().set_axisbelow(True)
+plt.tight_layout()
+```
+
+## The Likelihood Surface (T=100)
+```{python}
+#| fig-align: center
+plot_likelihood_analysis(T=100, phi_true=0.5, theta_true=0.2, seed=123)
+```
+
+## The Likelihood Surface (T=5000)
+```{python}
+#| fig-align: center
+plot_likelihood_analysis(T=5000, phi_true=0.5, theta_true=0.2, seed=123)
+```
+
+## The Likelihood Surface (T=10000)
+```{python}
+#| fig-align: center
+plot_likelihood_analysis(T=10000, phi_true=0.5, theta_true=0.2, seed=123)
+```
+
+## The Likelihood Gets More Concentrated!
+```{python}
+#| fig-align: center
+#| echo: false
+#| output: false
+def plot_likelihood_analysis_return_data(T: int, phi_true: float, theta_true: float, seed: int = 123):
+    """Compute and return likelihood data for given sample size."""
+    # Simulate data
+    y = simulate_arma11(phi_true, theta_true, T, seed=seed)
+    
+    # Grid and likelihood surface
+    phi_grid = np.linspace(-0.4, 0.9, 20)
+    theta_grid = np.linspace(-0.4, 0.9, 20)
+    Phi, Theta, L = cond_loglik_grid(y, phi_grid, theta_grid)
+    
+    # Normalize
+    L_norm = L - np.max(L)
+    
+    return Phi, Theta, L_norm
+
+# Compute likelihood surfaces for all three sample sizes
+Phi_100, Theta_100, L_100 = plot_likelihood_analysis_return_data(100, 0.5, 0.2, 123)
+Phi_1000, Theta_1000, L_1000 = plot_likelihood_analysis_return_data(5000, 0.5, 0.2, 123)
+Phi_10000, Theta_10000, L_10000 = plot_likelihood_analysis_return_data(10000, 0.5, 0.2, 123)
+
+# Create single 3D plot with all three surfaces
+fig = plt.figure(figsize=(4, 4))
+ax = fig.add_subplot(111, projection='3d')
+
+# Plot all three surfaces with different transparency
+ax.plot_surface(Theta_100, Phi_100, L_100, cmap='viridis', alpha=0.4, edgecolor='none')
+ax.plot_surface(Theta_1000, Phi_1000, L_1000, cmap='viridis', alpha=0.5, edgecolor='none')
+ax.plot_surface(Theta_10000, Phi_10000, L_10000, cmap='viridis', alpha=0.6, edgecolor='none')
+
+ax.set_xlabel(r"$\theta$", fontsize=12, labelpad=5)
+ax.set_ylabel(r"$\phi$", fontsize=12, labelpad=5)
+ax.view_init(elev=25, azim=130)
+
+plt.savefig("likelihood_concentration.png", dpi=300, bbox_inches='tight')
+plt.close(fig)
+```
+
+```{=latex}
+\begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+        \begin{figure}
+            \centering
+            \includegraphics[width=\textwidth]{likelihood_concentration.png}
+        \end{figure}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \begin{itemize}\itemsep1em
+            \item $\uparrow T \implies$ tighter likelihood. Why?
+            \item How is the Hessian at the optimum related to this?
+            \item What is the connection with the asymptotic distribution of the MLE?
+        \end{itemize}
+    \end{column}
+\end{columns}
+```
+
+
 ##  {.standout}
 
 Questions?
