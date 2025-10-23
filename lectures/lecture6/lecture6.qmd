@@ -331,7 +331,7 @@ $$
 $$ 
 where $\mathcal{I}(\symbf{\Theta})$ is the Fisher information matrix;
 
-- Recall that, in this case, $\mathcal{I}(\symbf{\Theta}) = -\mathbb{E}\left[\frac{\partial^2 \mathcal{L}(\symbf{\Theta}|\symbf{y})}{\partial \symbf{\Theta} \partial \symbf{\Theta}'}\right] = \mathbb{E}\left[\frac{\partial \mathcal{L}(\symbf{\Theta}|\symbf{y})}{\partial \symbf{\Theta}}\frac{\partial \mathcal{L}(\symbf{\Theta}|\symbf{y})}{\partial \symbf{\Theta}'}\right]$;
+- Recall that, in this case, $\mathcal{I}(\symbf{\Theta}) = -\mathbb{E}\left[\frac{\partial^2 \mathcal{l}_t(\symbf{\Theta})}{\partial \symbf{\Theta} \partial \symbf{\Theta}'}\right] = \mathbb{E}\left[\frac{\partial \mathcal{l}_t(\symbf{\Theta}|\symbf{y})}{\partial \symbf{\Theta}}\frac{\partial \mathcal{l}_t(\symbf{\Theta}|\symbf{y})}{\partial \symbf{\Theta}'}\right]$, where $\mathcal{l}_t(\symbf{\Theta}|\symbf{y}) = \log{\left(f_{y_t|\symbf{y_{t-1}}}(y_t|\symbf{y}_{t-1}; \symbf{\Theta})\right)}$;
 
 ## Feasible Inference
 - Of course we do not know $\mathcal{I}(\symbf{\Theta}_0) \implies$ it needs to be estimated!
@@ -361,7 +361,8 @@ $$
 
 ## Quasi-MLE
 - What if $\varepsilon_t$ is not Gaussian?
-- The MLE is still consistent under some conditions (e.g. finite fourth moment);
+- The MLE will converge to a different $\symbf{\Theta}_0$;
+- This parameter is the *pseudo-true* value that minimizes the Kullback-Leibler divergence between the true model and the assumed Gaussian model;
 - The idea, and the term _Quasi-MLE_, is due to White (Econometrica, 1982);
 
 . . .
