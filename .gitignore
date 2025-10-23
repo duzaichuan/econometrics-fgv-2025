@@ -13,6 +13,7 @@ check.*
 check_gpt.py
 *.ipynb
 solutions/**/*.tex
+*.sh
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
