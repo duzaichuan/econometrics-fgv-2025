@@ -599,7 +599,7 @@ Questions?
 
 - But this will **always** favor larger models! Why?
   - Adding parameters can never decrease the maximized log-likelihood;
-  - Converges to a perfect fit *in_sample* as $(p,q) \to \infty$ (overfitting);
+  - Converges to a perfect fit *in sample* as $(p,q) \to \infty$ (overfitting);
 
 . . .
 
