@@ -171,7 +171,14 @@ Questions?
 
 - If $\{y_t\}$ is an MDS with respect to $\mathcal{F}_t$, it has mean zero and $\gamma_h = 0$ for $h \neq 0$;
 - Still an uncorrelated sequence over time, but this is much weaker than independence;
-- Example: $y_t = e_t z_{t-1}$, where $e_t$ is i.i.d. with mean zero and $z_{t-1}$ is known at $t-1$;
+
+. . .
+
+**Example**: $y_t = e_t e_{t-1}$, where $e_t$ is i.i.d. with mean zero and $\mathcal{F}_t =$ "the entire path of $e_s \leq t$";
+
+- We have that $\mathbb{E}[y_t|\mathcal{F}_{t-1}] = e_{t-1} \mathbb{E}[e_t|\mathcal{F}_{t-1}] = 0$.
+- But we have $Cov(y_t^2, y_{t-1}^2) = \sigma^4\left(\mathbb{E}[e_t^4] - \sigma^4\right) > 0 \implies$ dependence;
+
 
 ## A CLT for Martingale Difference Sequences
 
@@ -221,11 +228,12 @@ Questions?
 ## IID Innovations
 
 ```{=tex}
-\begin{theorem}
+\begin{theorem}[Theorem 7.11 from Hamilton's book]
 Let $y_t = \mu + \sum\limits_{j=0}^{\infty} \psi_j e_{t-j}$, where $\{e_t\}$ is i.i.d. with mean zero and finite variance. Assume that $\sum\limits_{j=0}^{\infty} |\psi_j| < \infty$. Then:
 $$\sqrt{T}\cdot (\bar{y}_T - \mu) \xrightarrow{d} \mathcal{N}\left(0, \sum\limits_{h = -\infty}^{\infty}\gamma_h \right)$$
 \end{theorem}
 ```
+# Correlated Innovations and Strong Mixing
 
 - Mixing is implicit in the assumption that $\{e_t\}$ is i.i.d.;
 - The result generalizes for vectors;
@@ -233,14 +241,12 @@ $$\sqrt{T}\cdot (\bar{y}_T - \mu) \xrightarrow{d} \mathcal{N}\left(0, \sum\limit
 - See Phillips and Solo (Annals of Statistics, 1992) for a complete treatment;
 
 ## Strong Mixing
-
-
 - We need a way to **quantify how fast dependence fades with time**;
 - For two events \(A,B\), define the discrepancy
 $$
   \alpha(A,B) \;=\; \big|\,\mathbb{P}(A\cap B)-\mathbb{P}(A)\mathbb{P}(B)\,\big|
 $$
-  which is zero if $A$ and $B$$ are independent and positive otherwise;
+  which is zero if $A$ and $B$ are independent and positive otherwise;
 
 . . .
 
@@ -254,14 +260,14 @@ $$
 - We say that a process is **strong-mixing** if $\alpha(l) \to 0$ as $l \to \infty$;
 - The faster $\alpha(l)$ goes to zero, the weaker the dependence;
 
-# Correlated Innovations and Strong Mixing
 
+## A CLT for Strong-Mixing Processes
 ```{=latex}
-\begin{theorem}
+\begin{theorem}[Theorem 14.15 from Hansen's book]
 Let $y_t$ be a strictly stationary process with mixing coefficients $\alpha(l)$. Assume that:
 \begin{enumerate}\itemsep0.5em
 \item $\mathbb{E}[y_t] = 0$;
-\item $E[|y_t|^r] < \infty$ for some $r > 2$;
+\item $\mathbb{E}[|y_t|^r] < \infty$ for some $r > 2$;
 \item $\sum\limits_{l=1}^{\infty} \alpha(l)^{\frac{r-2}{r}} < \infty$;
 \end{enumerate}
 
@@ -310,6 +316,9 @@ $$
 - Inference is a more complicated matter;
 - Depending on the assumptions we make on $\{u_t\}$, we will get different results;
 - The defining feature is whether $\symbf{x}_tu_t$ is uncorrelated over time or not;
+
+. . .
+
 - In either case, assume that $\left(\frac{1}{T} \sum_{t=1}^T \symbf{x}_t \symbf{x}_t^\prime\right) \to \symbf{Q}$, where $\symbf{Q}$ is positive definite;
 - We will get two different limiting results depending on the assumptions we use...
 
