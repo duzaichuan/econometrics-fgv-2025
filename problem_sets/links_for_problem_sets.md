@@ -18,7 +18,8 @@ Notice that this one is to set everything up.
 - Due date: Thursday, October 23rd
 
 ## 📝 Problem Set 3
-- Link: [To be added]
+- Link: [https://classroom.github.com/a/Pb1m_Xtn](https://classroom.github.com/a/Pb1m_Xtn)
+- Due date: Thursday, October 30th
 
 ## 📝 Problem Set 4
 - Link: [To be added]
