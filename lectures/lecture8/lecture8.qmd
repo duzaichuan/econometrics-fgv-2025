@@ -1,0 +1,485 @@
+---
+title: "Lecture 8: Unit Roots, AR-DL Models, and Granger Causality"
+author: "Raul Riva"
+institute: "FGV EPGE"
+date: "2025-10-01"
+date-format: "MMMM, YYYY"
+format: 
+    beamer:
+        latex-engine: lualatex
+        aspectratio: 169
+        include-in-header: ../beamer_template.tex
+        header-includes:
+            - \apptocmd{\tightlist}{\setlength{\itemsep}{8pt}}{}{}
+            - \usepackage{unicode-math}
+            - \usepackage{multirow}
+        slide-level: 2
+        urlcolor: FGVBlue
+        linkcolor: slateblue
+        fig-align: center
+jupyter: python3
+highlight-style: github
+---
+
+# Intro
+- We have modelled time-dependence in different ways through ARMA models;
+- But every time we had only one variable $y_t$;
+- In reality: several variables interact over time generating complicated dynamics;
+- Causality in this context is super hard -- no hope for experiments and so on;
+- Importantly: a tool like an estimator can never ensure causality. Only careful design can.
+
+## Quick Simulation
+
+- Let $u_t$ and $v_t$ be two independent i.i.d. $\sim N(0,1)$ random variables;
+- Let $y_t = y_{t-1} + u_t$ and $x_t = x_{t-1} + v_t$;
+- Both $y_t$ and $x_t$ are random walks (non-stationary processes);
+- Both are _completely independent_ of each other;
+
+. . .
+
+- But let's say you do not know that and you try to regress $y_t$ on $x_t$:
+$$
+y_t = \alpha + \beta x_t + \epsilon_t
+$$
+- What would be your interpretation of $\beta$ here?
+- What would you expect in terms of the estimate of $\beta$?
+
+## Simulation Setup
+
+- For a sample size $T$, simulate many paths of length $T$ of the pair $(y_t, x_t)$;
+- For each path, estimate the regression of $y_t$ on $x_t$ and collect $\hat{\beta}$;
+
+. . .
+
+- Additionally, I will also estimate the regression of $y_t$ on $x_t$ and $y_{t-1}$:
+$$
+y_t = \alpha + \beta x_t + \gamma y_{t-1} + \epsilon_t
+$$
+
+. . .
+
+- For each run, I implement a t-test of $H_0: \beta = 0$ at 5% significance level;
+- For each run, I record whether we would find starts in a regression table or not...
+- Repeat this for many different $T$;
+
+## Rejection Rates for $\beta$ at 5% Significance Level
+```{python}
+#| label: spurious-two-models
+#| echo: false
+#| message: false
+#| warning: false
+
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+
+def simulate_random_walks(n, rng):
+    e1 = rng.standard_normal(n)
+    e2 = rng.standard_normal(n)
+    x = np.cumsum(e1)
+    y = np.cumsum(e2)
+    return pd.DataFrame({"y": y, "x": x})
+
+def run_two_models(df):
+    """
+    Returns:
+      t_x_m1, p_x_m1  for model (1): y ~ const + x
+      t_x_m2, p_x_m2  for model (2): y ~ const + x + y_{t-1}
+    """
+    # Model 1: y ~ const + x
+    X1 = sm.add_constant(df["x"])
+    res1 = sm.OLS(df["y"], X1).fit()
+    t_x_m1 = res1.tvalues.get("x", np.nan)
+    p_x_m1 = res1.pvalues.get("x", np.nan)
+
+    # Model 2: y ~ const + x + y_{t-1}
+    df2 = df.copy()
+    df2["y_l1"] = df2["y"].shift(1)
+    df2 = df2.dropna()
+    X2 = sm.add_constant(df2[["x","y_l1"]])
+    res2 = sm.OLS(df2["y"], X2).fit()
+    t_x_m2 = res2.tvalues.get("x", np.nan)
+    p_x_m2 = res2.pvalues.get("x", np.nan)
+
+    return (t_x_m1, p_x_m1, t_x_m2, p_x_m2)
+
+def spurious_rejection_two_models(n_list, reps=1000, alpha=0.05, seed=2025):
+    rng = np.random.default_rng(seed)
+    rows = []
+    tstat_rows = []  # long-form storage of all t-stats for later analysis/plots
+
+    for n in n_list:
+        rej1 = rej2 = 0
+        for r in range(reps):
+            df = simulate_random_walks(n, rng)
+            t1, p1, t2, p2 = run_two_models(df)
+
+            rej1 += int(p1 < alpha)
+            rej2 += int(p2 < alpha)
+
+            tstat_rows.append({"n": n, "rep": r+1, "model": "y~x",        "t_x": t1})
+            tstat_rows.append({"n": n, "rep": r+1, "model": "y~x+y_lag",  "t_x": t2})
+
+        rows.append({
+            "n": n,
+            "rejection_rate_5pct_y_on_x": rej1 / reps,
+            "rejection_rate_5pct_y_on_x_yLag": rej2 / reps
+        })
+
+    reject_table = pd.DataFrame(rows)
+    tstats_df = pd.DataFrame(tstat_rows)
+    return reject_table, tstats_df
+
+# Parameters (tweak as needed for speed in class)
+n_list = [50, 100, 500, 1000, 10000]
+reject_table, tstats_df = spurious_rejection_two_models(n_list, reps=1000, alpha=0.05, seed=2025)
+```
+
+```{python}
+# Please create python code for a bar plot with the rejetion rates as a function of n and for each n please show two bars of different colors to distinguish the two models. Dont create quarto comments
+import matplotlib.pyplot as plt
+plt.rcParams["font.family"] = "Arial"
+
+# Prepare values
+n_values = reject_table['n'].astype(str).tolist()
+rej1 = reject_table['rejection_rate_5pct_y_on_x'].values
+rej2 = reject_table['rejection_rate_5pct_y_on_x_yLag'].values
+
+x = np.arange(len(n_values))
+width = 0.35
+
+fig, ax = plt.subplots(figsize=(7.5, 3.8))
+bars1 = ax.bar(x - width/2, rej1, width, label=r'$y_t = \alpha + \beta x_t$', color='#1f77b4', ec="k")
+bars2 = ax.bar(x + width/2, rej2, width, label=r'$y_t = \alpha + \beta x_t + \gamma y_{t-1}$', color='#ff7f0e', ec="k")
+plt.axhline(y=0.05, color='k', linestyle='--', label='5% Significance Level')
+
+ax.set_xlabel('Sample Size (T)')
+ax.set_ylabel('Rejection Rate')
+ax.set_xticks(x)
+ax.set_xticklabels(n_values)
+ax.set_ylim(0, max(max(rej1), max(rej2)) * 1.1)
+ax.legend(fontsize=9)
+
+# Annotate bar heights
+for rect in list(bars1) + list(bars2):
+    height = rect.get_height()
+    ax.annotate(f'{height:.2f}',
+                xy=(rect.get_x() + rect.get_width() / 2, height),
+                xytext=(0, 3),
+                textcoords='offset points',
+                ha='center', va='bottom', fontsize=9)
+
+plt.grid(True, alpha=0.4)
+ax.set_axisbelow(True)
+plt.tight_layout()
+plt.show()
+```
+
+## What is going on?
+
+- Even with a correctly specified model, we rejected the null too often!
+- The reason is the lack of stationarity of the data generating process!
+- Recall that (imposing that I start the simulation at $x_0$ = 0):
+$$
+% show that the variance of X_t increases linearly with t
+Var(x_t) = Var\left(\sum_{s=1}^{t}v_t\right) = t;
+$$
+
+. . .
+
+- This will imply $\frac{1}{T}\sum_{t=1}^{T}x_t^2$ does _not_ converge to a constant as $T \to \infty$;
+- This is easy to see:
+$$
+E\left[\frac{1}{T}\sum_{t=1}^{T}x_t^2\right] = \frac{1}{T}\sum_{t=1}^{T}E[x_t^2] = \frac{1}{T}\sum_{t=1}^{T} t = \frac{T+1}{2} \to \infty;
+$$
+
+## Empirical Takeaway
+
+- Correlation does not imply causation -- **especially** in time series;
+- Regressions with non-stationary data can be very misleading;
+- Regressions with non-stationary data only make sense in a specific context (Cointegration -- more on that later);
+- Also important: the asymptotic theory we saw so far **does not apply** to non-stationary data;
+- We need completely new theorems -- and these are one order of magnitude more sophisticated;
+- Good stuff for a second-year class, right? \Large\emoji{winking-face}
+
+##  {.standout}
+
+Questions?
+
+# Persistence vs Unit Roots
+
+- Let's say you have $y_t$ and you are interested in knowing whether it is stationary or not;
+- First, to determine the level of dependence you estimate an $AR(1)$ model:
+$$
+y_t = \rho y_{t-1} + \epsilon_t, \qquad \epsilon_t \sim \text{ iid } N(0, \sigma^2), \quad y_0 = 0;
+$$
+- The OLS estimator is:
+$$
+\hat{\rho} = \frac{\sum\limits_{t=1}^{T}y_ty_{t-1}}{\sum\limits_{t=1}^{T}y_{t-1}^2} = \rho + \frac{\sum\limits_{t=1}^{T}y_{t-1}\epsilon_t}{\sum\limits_{t=1}^{T}y_{t-1}^2};
+$$
+
+. . .
+
+- Let's you get $\hat{\rho} = 0.96$;
+- Is this just a very persistent series or is it non-stationary?
+
+. . .
+
+- If $\rho < 1$, we already know that $\sqrt{T}(\hat{\rho} - \rho) \xrightarrow{d} N(0, \sigma^2(1 - \rho^2))$.
+
+## What happens if $\rho = 1$?
+
+- If $\rho = 1$, this distribution vanishes -- the variance goes to zero;
+- This is already hinting at the need of a different asymptotic theory;
+
+. . .
+
+- If $\rho = 1$, we have that $y_t \sim N(0, \sigma^2\cdot t)$;
+- Notice that $\mathbb{E}[u_ty_{t-1}] = 0$;
+- Moreover: $y_t^2 = y_{t-1}^2 + 2y_{t-1}u_t + u_t^2$;
+- Using a telescoping sum and that $y_0 = 0$:
+$$
+y_{t-1}u_t = \frac{1}{2}\left(y_t^2 - y_{t-1}^2 - u_t^2\right) \implies \frac{1}{T\cdot \sigma^2}\sum_{t=1}^{T}y_{t-1}u_t = \frac{1}{2}\left(\frac{y_T^2}{\sigma^2 T} - \sum_{t=1}^{T}\frac{u_t^2}{\sigma^2 T}\right);
+$$
+
+. . .
+
+- What's the distribution of $\frac{y_T^2}{\sigma^2 T}$?
+- What's the probability limit of $\sum_{t=1}^{T}\frac{u_t^2}{\sigma^2 T}$?
+
+## What's the right rate?
+- Putting it together:
+$$
+\frac{1}{\sigma^2 T}\sum_{t=1}^{T}y_{t-1}u_t \xrightarrow{d} \frac{1}{2}(\chi^2 - 1);
+$$
+
+- The numerator is $O_p(T)$ and the limiting distribution is non-normal;
+
+. . .
+
+- Now we shall study the denominator. Notice that
+$$
+\mathbb{E}\left[\sum\limits_{t=1}^{T}y_{t-1}^2\right] = \sigma^2\sum\limits_{t=1}^{T}(t-1) = \sigma^2\frac{(T-1)T}{2} \approx \sigma^2\frac{T^2}{2};
+$$
+
+- The denominator is $O_p(T^2)$ we need to scale it by $T^2$ to get meaningful limits;
+- We can show that $\frac{1}{\sigma^2 T^2}\sum\limits_{t=1}^{T}y_{t-1}^2 \xrightarrow{d}$ (some complicated distribution based on functionals of a Brownian Motion);
+
+# What's the right rate?
+
+- The important thing to notice here is that the right rate is $T$ and not $\sqrt{T}$:
+$$
+T(\hat{\rho} - 1) = \frac{\frac{1}{T}\sum\limits_{t=1}^{T}y_{t-1}u_t}{\frac{1}{T^2}\sum\limits_{t=1}^{T}y_{t-1}^2} \xrightarrow{d} \text{a complicated distribution}
+$$
+- The critical values for this distribution are very different from the normal ones;
+- They are fully known with any precision and can be computed through numerical simulation;
+- Now we can build a test for $H_0: \rho = 1$ vs $H_a: \rho < 1$!
+- The $t$-statistic is given by $t = \frac{\hat{\rho} - 1}{\hat{s}_T}$, where $\hat{s}_T = \frac{\frac{1}{T}\sum \hat{\epsilon}_t^2}{\sqrt{\sum_{t=1}^T y_t^2}}$, which is the usual one;
+- The $t$-statistic has a complicated and known distribution as well;
+
+## What's the right distribution?
+
+- The distribution of $\hat{\rho}$ is actually more complicated than you think;
+- It depends, even under the null, on two things:
+  1. Whether the true process has a drift or not: $y_t = \mu + \rho y_{t-1} + \epsilon_t$ VS $y_t = \rho y_{t-1} + \epsilon_t$;
+  2. Whether you included or not a constant and/or a time trend in the regression;
+
+. . .
+
+- A time trend is reasonable to consider since the drift implies a trend:
+$$
+y_t = \mu \cdot t + \sum_{s=1}^{t}\epsilon_s;
+$$
+
+- In any case, the distributions are known and available in statistical packages;
+- The distributions for the $t$-statistic also change;
+
+## These Distributions Are Skewed!
+![The Distributions for $\hat{\rho}$ and the $t$-statistic](distributions.png)
+
+## AR($p$) and Unit Roots
+- What if the true process is an $AR(p)$ with an unit root?
+$$
+y_t = \phi_1 y_{t-1} + \phi_2 y_{t-2} + \ldots + \phi_p y_{t-p} + \epsilon_t;
+$$
+- Using our previous notation, a unit root is equivalent to $\phi_1 + \phi_2 + \ldots + \phi_p = 1$;
+
+. . .
+
+- Consider the vector $\symbf{y}_{t-1} = (y_{t-1}, ..., y_{t-p})'$ and the $p\times p$ matrix:
+$$
+B = \begin{bmatrix}
+1 & 0 & 0 & \cdots & 0\\
+1 & -1 & 0 & \cdots 0\\
+0 & 1 & -1 & \cdots & 0\\
+\vdots & \vdots & \vdots & \ddots & \vdots\\
+0 & 0 & \cdots & 1 & -1
+\end{bmatrix}
+$$
+
+- It maps $\symbf{y}_{t-1}$ to $(y_{t-1}, \Delta y_{t-1}, \ldots, \Delta y_{t-p+1})$;
+
+## AR($p$) and Unit Roots
+- Let $\rho \in \mathbb{R}$ and $\beta \in \mathbb{R}^{p-1}$ be such that:
+$$
+\begin{bmatrix}
+\phi_1\\
+\phi_2\\
+\vdots\\
+\phi_p
+\end{bmatrix}_{p\times 1} = B'_{p \times p} \begin{bmatrix}
+\rho\\
+\beta
+\end{bmatrix}_{p\times 1} \implies y_t = \rho y_{t-1} + \beta_1 \Delta y_{t-1} + \ldots + \beta_{p-1} \Delta y_{t-p+1} + \epsilon_t;
+$$
+
+- It is a quick exercise to show that $\rho = \phi_1 + \ldots + \phi_p$;
+- Testing for an unit root is equivalent to testing $H_0: \rho = 1$ in this regression;
+
+. . .
+
+- $T(\hat{\rho} - 1) \xrightarrow{d} \text{(a complicated distribution)}$ and $\sqrt{T}(\hat{\beta} - \beta) \xrightarrow{d} N(0, V)$ for some matrix $V$;
+- Notice that only the distribution of $\hat{\rho}$ is non-standard;
+
+## The Augmented Dickey-Fuller (ADF) Test
+- The **Augmented Dickey-Fuller (ADF) Test** consists of testing whether $\rho = 1$;
+- The test statistic is the usual $t$-statistic:
+$$
+t_{ADF} \equiv \frac{\hat{\rho} - 1}{\hat{s}_T}
+$$
+where $\hat{s}_T$ is the usual standard error of $\hat{\rho}$ in the regression;
+- The test **rejects the hypothesis of a unit root** for large negative values of $t_{ADF}$;
+- Reject an unit root if $t_{ADF} < c_\alpha$ where $c_\alpha$ is the $\alpha$-quantile of the asymptotic distribution;
+- This asymptotic distribution depends on whether you include a constant and/or a time trend in the regression;
+
+## Other Tests for Unit Roots
+- This is not the only test for unit roots -- there are other options;
+- ADF is easy to implement and very popular, but it is very sensitive to the choice of $p$;
+- One reasonable way of choosing $p$ is using an IC like AIC;
+
+. . .
+
+- The **Phillips-Perron (PP)** test has the same null and alternative hypotheses;
+- The PP test is based on a non-parametric correction for the variance of $\epsilon_t$;
+- The PP test does not require choosing a lag length $p$;
+
+. . .
+
+- Another popular guy: **KPSS** test, based on the residuals of a regression of $y_t$ on a constant and/or a time trend;
+- The KPSS test has the opposite null and alternative hypotheses: $H_0$: Stationary vs $H_a$: Unit Root;
+
+## The Bayesian Critique
+- All these tests are frequentist in nature -- they rely on long-run frequency properties;
+- There is another way of looking at this problem: Bayesian Inference;
+- Start with a prior $p(\rho)$, use the likelihood $p(y_1, \ldots, y_T | \rho)$ to get the posterior $p(\rho | y_1, \ldots, y_T)$;
+- You don't have to decide between $|\rho|=1$ vs $|\rho| \neq 1$;
+- In that sense the Bayesian approach is _unified_;
+- Very cool paper about it: _Understanding Unit Rooters: A Helicopter Tour_ by Sims and Uhlig (1991);
+- Bayesian methods are _super popular_ among the empirical macro and DSGE crowd!
+- Very good stuff for another second-year class! Also, huge payoffs if you are good at coding;
+
+##  {.standout}
+
+Questions?
+
+# Empirical Illustration
+
+- Let's apply the ADF test to some real data;
+- Let's do some unit root testing on three diferent series:
+  1. Brazilian inflation (IPCA percentage increase, in levels);
+  2. USD/BRL Exchange Rate (monthly average, in levels);
+  3. The monetary base in Brazil (M2, in log);
+- Our null hypothesis is that these series have a unit root (or are **integrated**);
+- What kind of specification should we use? Constant only? Constant + Trend?
+
+## Take a look at the data
+
+```{python}
+import pandas as pd
+
+data = pd.read_csv("brazil_macro_data.csv", parse_dates=["Date"], index_col="Date")
+data.columns = ["IPCA", "Exchange Rate", "M2"]
+data["M2_Log"] = np.log(data["M2"])
+
+# Plot the data in three different subplots horizontally
+fig, axs = plt.subplots(1, 3, figsize=(10, 3))
+plots = [
+    {"col": "IPCA", "title": "Brazilian Inflation (IPCA)", "ylabel": "IPCA (%)"},
+    {"col": "Exchange Rate", "title": "USD/BRL Exchange Rate", "ylabel": "Exchange Rate (BRL per USD)", "color": "#ff7f0e"},
+    {"col": "M2_Log", "title": "M2 (in logs)", "ylabel": "Log(M2)", "color": "#2ca02c"},
+]
+
+for ax, cfg in zip(axs, plots):
+    ax.plot(data[cfg["col"]], color=cfg.get("color"))
+    ax.set(xlabel="Date", ylabel=cfg["ylabel"], title=cfg["title"])
+    ax.grid(True, alpha=0.3)
+    ax.set_axisbelow(True)
+
+plt.tight_layout()
+plt.show()
+
+```
+
+- What kind of economic theories justify the presence (or lack thereof) of units roots?
+- All series are at the monthly frequency here;
+- Why does the monetary base have spikes? Would that violate stationarity?
+
+## Running the ADF test
+
+```{python}
+#| echo: false
+#| output: asis
+from statsmodels.tsa.stattools import adfuller
+
+series_cfg = [
+    ("IPCA", "IPCA"),
+    ("Exchange Rate", "Exchange Rate"),
+    ("M2_Log", "M2 (log)"),
+]
+
+rows = []
+for col, title in series_cfg:
+    ser = data[col].dropna()
+    for reg, spec_label in [("c", "Constant"), ("ct", "Const+Trend")]:
+        result = adfuller(ser, regression=reg, autolag="AIC")
+        adf_stat, pvalue, usedlag, nobs, crit_vals, icbest = result
+
+        rows.append({
+            "Series": title,
+            "Specification": spec_label,
+            "ADF": f"{adf_stat:.2f}",
+            r"$p$-value": f"{pvalue:.2f}",
+            "5% Crit": f"{crit_vals['5%']:.2f}",
+            "Lags": int(usedlag),
+            "N": int(nobs),
+        })
+
+adf_df = pd.DataFrame(rows)
+print(adf_df.to_markdown(index=False))
+```
+
+- Inflation: we reject the null across the board;
+- For the exchange rate: we cannot reject the unit root;
+- For M2: we only reject when **excluding** the trend;
+- When we add the trend, we cannot reject the unit root;
+
+# AR-DL Models
+
+# Granger Causality
+
+
+
+##  {.standout}
+
+Questions?
+
+##  {.standout}
+
+The End
+
+## References
+
+- Chapter 11 on Hamilton's book discusses a bit of Granger Causality;
+- Sections 14.40 and 14.44 on Hansen's book discuss AR-DL models and Granger Causality;
+- See the Chapter 16 on Hansens book about unit roots;
+- Chapter 17 on Hamilton's book discusses non-stationary time series and unit roots;
