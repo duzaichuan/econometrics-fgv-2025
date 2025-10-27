@@ -465,9 +465,159 @@ print(adf_df.to_markdown(index=False))
 
 # AR-DL Models
 
+## An Example of Monetary Policy Adjustment
+- Let $i_t$ be the nominal interest rate set by the central bank at time $t$;
+- Let $\pi_t^e$ be the inflation expectation at $t$ for $t+1$;
+- Let $r_t^*$ be an equilibrium real interest rate;
+- Assume that $r_t^* = \alpha + \symbf{x}_t' \beta$;
+- $\symbf{x}_t$ is a vector of other determinants of the equilibrium real rate;
+- Examples: productivity growth, unemployment, foreign interest rates, risk premia, etc;
+- Let $i_t^* = r_t^* + \pi_t^e$ be the "desired" nominal interest rate;
+
+. . .
+
+At time $t$, assume that the central bank solves
+$$
+\min_{i_t} \left(\left(i_t - i_t^*\right)^2 + \theta \left(i_t - i_{t-1}\right)^2\right)
+$$
+
+## Can We Estimate This Rule?
+- The solution is
+$$
+i_t = \frac{1}{1+\theta} i_t^* + \frac{\theta}{1+\theta} i_{t-1} = \frac{1}{1+\theta} \left(\alpha + \symbf{x}_t' \beta + \pi_t^e\right) + \frac{\theta}{1+\theta} i_{t-1}
+$$
+
+- How would you recover $\theta$ from time series regressions?
+
+. . .
+
+- Let's say you run this regression:
+$$
+i_t = \alpha_0 + \alpha_1 i_{t-1} + \symbf{x}_t' \delta + \gamma \pi_t^e + \varepsilon_t
+$$
+- Under what conditions involving $(\symbf{x}_t, \pi_t^e)$ and $\varepsilon_t$ can we consistently estimate this rule using OLS?
+
+. . .
+
+- What if $i_t$ also matters for $\symbf{x_t}$? What about $\pi_t^e$? How to interpret coefficients then?
+- What would be interesting examples here?
+
+## The AR–DL Model
+- You just saw one example of an AR-DL model;
+- An **AR-DL(p,q)** model posits the following dynamics for a general $y_t$:
+$$
+y_t = \alpha + \sum_{i=1}^{p}\phi_i\,y_{t-i} + \sum_{j=0}^{q}\beta_j'\,\symbf{x}_{t-j} + \varepsilon_t,
+\qquad E[\varepsilon_t]=0
+$$
+
+- When $p=0$, it's called an **ADL(q)** model;
+- Potentially quite useful for forecasting;
+- On its own, essentially silent about causality. You typically need a model to make sense of these coefficients;
+- Estimation can be done by OLS;
+- Inference on coefficients should probably use Newey-West standard errors. Why?
+
+## Interpreting AR–DL Coefficients
+
+- Consider $y_t = \alpha + \beta_0 x_t + \beta_1 x_{t-1} + \ldots + \beta_q x_{t-q}+ \varepsilon_t$
+- Notice that if $x_t$ changes, it will potentially impact $y_t, y_{t+1}, ..., y_{t+q}$ directly;
+- There might be indirect effects too if $x_t$ is persistent;
+- We are frequently interested in estimating $\beta_0 + \beta_1 + \ldots + \beta_q \implies$ a "long-run" effect;
+- You can test hypotheses about this sum using linear hypothesis tests;
+- The issue here is that $x_t$ might induce change in $x_{t+1}$, $x_{t+2}$, etc;
+- To be honest you should interpret $\beta_j$'s as partial correlations, unless you have a full model;
+
+## Can We Ever Hope to Get to Causality?
+- To get to causality, we typically need: 
+  - Exogenous variation in $x_t$;
+  - An explicit link of how $x_t$ affects $y_t$ over time;
+
+. . .
+
+- There is a **huge** literature on this and what people do is a VAR;
+- A VAR is a system of AR-DL models where all variables are treated symmetrically:
+$$
+\begin{bmatrix}
+y_{1,t}\\
+y_{2,t}\\
+\vdots\\
+y_{K,t}
+\end{bmatrix} = \begin{bmatrix}
+\alpha_1\\
+\alpha_2\\
+\vdots\\
+\alpha_K
+\end{bmatrix} + \sum_{i=1}^{p} \begin{bmatrix}
+\phi_{11,i} & \phi_{12,i} & \cdots & \phi_{1K,i}\\
+\phi_{21,i} & \phi_{22,i} & \cdots & \phi_{2K,i}\\
+\vdots & \vdots & \ddots & \vdots\\
+\phi_{K1,i} & \phi_{K2,i} & \cdots & \phi_{KK,i}
+\end{bmatrix} \begin{bmatrix}
+y_{1,t-i}\\
+y_{2,t-i}\\
+\vdots\\
+y_{K,t-i}
+\end{bmatrix} + \begin{bmatrix}
+\varepsilon_{1,t}\\
+\varepsilon_{2,t}\\
+\vdots\\
+\varepsilon_{K,t}
+\end{bmatrix}
+$$
+
+- Depending on assumptions about the shocks and the parameters, we can get to causal interpretations of the parameters;
+- This is out of scope here, but very good stuff for a second-year class! \emoji{eyes}
+
+##  {.standout}
+
+Questions?
+
 # Granger Causality
+- There is another concept of causality in time series: **Granger Causality**;
+- Let $y_t$ and $x_t$ be two stationary time series;
+- We say that $x_t$ does **not** Granger-cause $y_t$ if:
+$$
+\mathbb{E}(y_{t+1} | y_t, y_{t-1}, \ldots, x_t, x_{t-1}, \ldots) = \mathbb{E}(y_{t+1} | y_t, y_{t-1}, \ldots)
+$$
 
+. . .
 
+- If that's the case, $x_t$ does not help predicting $y_{t+1}$ once we know the past of $y_t$;
+- Notice that this is a prediction-based notion of causality;
+- To test for Granger causality, we can estimate an AR-DL model:
+$$
+H_0: \beta_0 = \beta_1 = \ldots = \beta_q = 0 \quad \text{vs} \quad H_1: \text{at least one } \beta_j \neq 0
+$$
+
+## In VAR Terms
+- With two variables, a VAR(p) model is given by:
+$$
+\begin{bmatrix}
+y_t\\
+x_t
+\end{bmatrix} = \begin{bmatrix}
+\alpha_1\\
+\alpha_2
+\end{bmatrix} + \sum_{i=1}^{p} \begin{bmatrix}
+\phi_{11,i} & \phi_{12,i}\\
+\phi_{21,i} & \phi_{22,i}
+\end{bmatrix} \begin{bmatrix}
+y_{t-i}\\
+x_{t-i}
+\end{bmatrix} + \begin{bmatrix}
+\varepsilon_{1,t}\\
+\varepsilon_{2,t}
+\end{bmatrix}
+$$
+
+- We would say that $x_t$ does not Granger-cause $y_t$ if:
+$$
+H_0: \phi_{12,1} = \phi_{12,2} = \ldots = \phi_{12,p} = 0 \quad \text{vs} \quad H_1: \text{at least one } \phi_{12,i} \neq 0
+$$
+
+- This is equivalent to having lower-triangular structure in the VAR;
+- Very often, economic models can be tested through tests of Granger causality;
+- Example: the information contained in the yield curve is a sufficient statistic for the future path of interest rates;
+- Checkout _"Asymmetric Violations of the Spanning Hypothesis"_, by Freire and Riva;
 
 ##  {.standout}
 
