@@ -197,7 +197,7 @@ $$
 
 - Correlation does not imply causation -- **especially** in time series;
 - Regressions with non-stationary data can be very misleading;
-- Regressions with non-stationary data only make sense in a specific context (Cointegration -- more on that later);
+- Regressions with non-stationary data only make sense in a specific context (Cointegration);
 - Also important: the asymptotic theory we saw so far **does not apply** to non-stationary data;
 - We need completely new theorems -- and these are one order of magnitude more sophisticated;
 - Good stuff for a second-year class, right? \Large\emoji{winking-face}
