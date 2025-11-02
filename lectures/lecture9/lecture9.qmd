@@ -1,0 +1,426 @@
+---
+title: "Lecture 9: The GMM Estimator - Part I"
+author: "Raul Riva"
+institute: "FGV EPGE"
+date: "2025-10-01"
+date-format: "MMMM, YYYY"
+format: 
+    beamer:
+        latex-engine: lualatex
+        aspectratio: 169
+        include-in-header: ../beamer_template.tex
+        header-includes:
+            - \apptocmd{\tightlist}{\setlength{\itemsep}{8pt}}{}{}
+            - \usepackage{unicode-math}
+        slide-level: 2
+        urlcolor: FGVBlue
+        linkcolor: slateblue
+        fig-align: center
+jupyter: python3
+highlight-style: github
+---
+
+# Intro
+
+## Example I: Consumption-Based Asset Pricing (Part 1)
+
+**The Model:**
+
+A representative agent maximizes expected lifetime utility:
+$$\max\limits_{\{C_t\}_{t}^{\inf}} E_0 \sum_{t=0}^{\infty} \beta^t u(C_t)$$
+subject to the budget constraint:
+$$W_{t+1} = (1+r_{t+1})(W_t - C_t)$$
+where:
+
+- **Endogenous variables**: $C_t$ (consumption), $W_t$ (wealth)
+- **Exogenous variables**: $r_{t+1}$ (gross return on assets, observable)
+- **Parameters**: $\beta$ (discount factor), $\gamma$ (risk aversion coefficient)
+
+## Example I: Consumption-Based Asset Pricing (Part 2)
+
+**First-order condition (Euler equation):**
+$$u'(C_t) = \beta E_t[(1+r_{t+1})u'(C_{t+1})]$$
+
+With CRRA utility $u(C) = \frac{C^{1-\gamma}}{1-\gamma}$, we have $u'(C) = C^{-\gamma}$:
+$$C_t^{-\gamma} = \beta E_t[(1+r_{t+1})C_{t+1}^{-\gamma}]$$
+**Moment conditions:**
+$$E_t\left[\underbrace{\beta(1+r_{t+1})\left(\frac{C_{t+1}}{C_t}\right)^{-\gamma} - 1}_{\equiv h_{Macro}(\text{parameters, data})}\right] = 0 \implies \mathbb{E}[h_{Macro}(\text{parameters, data})] = 0$$
+
+## Example II: Discrete Choice - Binary Logit Model (Part 1)
+
+**The Model:**
+
+Individual $i$ chooses between two products ($j = 0, 1$). The utility from product $j$ is:
+
+$$U_{ij} = X_j'\beta_i + \varepsilon_{ij}$$
+
+where:
+
+- $X_j$ are observed product characteristics (e.g., price, quality, features)
+- $\beta_i$ are preference parameters for individual $i$ (potentially heterogeneous)
+- $\varepsilon_{ij}$ are i.i.d. Type-I extreme value distributed (some weird stuff IO people like);
+
+Individual chooses product 1 if $U_{i1} > U_{i0}$. Normalize $X_0 = 0$ (outside option).
+
+## Example II: Discrete Choice - Binary Logit Model (Part 2)
+
+**Choice probability:** Let $Y_i$ be the decision taken by individual $i$;
+
+$$P(Y_i = 1 | X_1, \beta_i) = \frac{\exp(X_1'\beta_i)}{1 + \exp(X_1'\beta_i)} \equiv \Lambda(X_1'\beta_i)$$
+
+where $\Lambda(\cdot)$ is the logistic CDF and $Y_i = 1$ if individual $i$ chooses product 1.
+
+. . .
+
+**Moment condition:** Assume $\beta_i = \beta$ (homogeneous preferences).
+
+Define the "error" as $\eta_i = Y_i - \Lambda(X_1'\beta)$. Under correct specification:
+$$E[\eta_i | X_1] = 0$$
+This implies:
+
+$$E[\underbrace{X_1 \cdot (Y_i - \Lambda(X_1'\beta))}_{\equiv h_{IO}(\text{parameters, data})}] = 0 \implies \mathbb{E}[h_{IO}(\text{parameters, data})] = 0$$
+
+## Example III: Mean-Variance Portfolio Choice (Part 1)
+
+**The Model:**
+
+An investor allocates wealth between a risky asset (stock) and a risk-free asset (bond). The optimal portfolio weight $w$ on the risky asset solves:
+
+$$\max_{w} \quad E[R_p] - \frac{\lambda}{2} \text{Var}(R_p)$$
+
+where:
+
+- $R_p = w \cdot r_s + (1-w) \cdot r_f$ is the portfolio return
+- $r_s$ is the risky asset return (random)
+- $r_f$ is the risk-free rate (known)
+- $\lambda$ is the risk aversion parameter (to be estimated)
+
+## Example III: Mean-Variance Portfolio Choice (Part 2)
+
+**First-order condition:**
+
+$$E[r_s - r_f] - \lambda \cdot w \cdot \text{Var}(r_s) = 0$$
+Solving for the optimal weight:
+$$w^* = \frac{E[r_s - r_f]}{\lambda \cdot \text{Var}(r_s)}$$
+
+. . .
+
+**Moment condition:**
+If we observe portfolio weights $w_i$ for individual $i$, we can use:
+$$E\left[\underbrace{w_i - \frac{E[r_s - r_f]}{\lambda \cdot \text{Var}(r_s)}}_{\equiv h_{Finance}(\text{parameters, data})}\right] = 0 \implies \mathbb{E}[h_{Finance}(\text{parameters, data})] = 0$$
+
+## The General Framework
+- Many instances of Economics generate *moments conditions*;
+- These are restrictions data **and parameters** should be respect;
+- Typically, economic models restrict moments, not distributions. MLE requires *a lot*...
+
+. . .
+
+- Let $\symbf{w}_t$ be a $p\times 1$ vector of variables observed at time $t$ (data);
+- Let $\symbf{\theta}$ be an $a \times 1$ vector of parameters to be estimated;
+- Let $\symbf{h}: \mathbb{R}^a \times \mathbb{R}^p \to \mathbb{R}^r$ be a vector-valued **known** function;
+- We assume that there is a true value $\symbf{\theta}_0$ such that:
+$$\mathbb{E}[\symbf{h}(\symbf{\theta}_0, \symbf{w}_t)] = 0_{r\times 1}$$
+
+## The General Framework
+- Since the data is taken as random, $\symbf{m}(\symbf{\theta}) \equiv \mathbb{E}[\symbf{h}(\symbf{\theta}, \symbf{w}_t)]$ is just a function of $\symbf{\theta}$;
+- Idea: let's try to find a root of $\symbf{m}(\symbf{\theta})$!
+- What are the problems with this idea?
+- Two major issues:
+  1. We do not know how to compute that expectation, in general;
+  2. There may be no solution (or many) to $\symbf{m}(\symbf{\theta}) = 0$ (think about $a>r, a=r$, and $a<r$).;
+
+. . .
+
+- Hansen (1982) proposed a very clever way to deal with these issues...
+- First: let's approximate the expectation by the sample analog:
+$$\hat{\symbf{m}}_T(\symbf{\theta}, \mathcal{W}_T) = \frac{1}{T} \sum_{t=1}^{T} \symbf{h}(\symbf{\theta}, \symbf{w}_t), \text{ where } \mathcal{W}_T = (\symbf{w}_1, ..., \symbf{w}_T)$$
+
+## The General Framework
+- Second: instead of making it equal to zero (unfeasible), let's *minimize* its distance to zero!
+
+. . .
+
+- Let $\symbf{W}_T$ be a $r\times r$ positive definite matrix;
+- Consider the following scalar:
+$$Q_T(\symbf{\theta}, \mathcal{W}_T) \equiv \hat{\symbf{m}}_T(\symbf{\theta}, \mathcal{W}_T)' \symbf{W}_T \hat{\symbf{m}}_T\,(\symbf{\theta}, \mathcal{W}_T)$$
+- Obviously, $Q_T(\symbf{\theta}, \mathcal{W}_T) \geq 0$ for all $\symbf{\theta}$;
+- Hansen (1982) proposed minimizing this criterion function to estimate $\symbf{\theta}_0$:
+$$\hat{\symbf{\theta}}(\symbf{W}_T) \equiv \arg \min_{\symbf{\theta} \in \Theta} Q_T(\symbf{\theta}, \mathcal{W}_T)$$
+- The argmin depends on the weighting matrix $\symbf{W}_T$, by the way;
+- Intuition: if $\symbf{\theta} \approx \symbf{\theta}_0$, then $Q_T(\symbf{\theta}, \mathcal{W}_T) \approx 0$ by the LLN if $\symbf{h(.,.)}$ is smooth enough;
+
+##  {.standout}
+
+Questions?
+
+## The First-Order Conditions
+For a differentiable $\symbf{h}(\symbf{\theta}, \symbf{w}_t)$, the FOC for the GMM estimator is:
+$$\frac{\partial Q_T(\hat{\symbf{\theta}}(\symbf{W}_T), \mathcal{W}_T)}{\partial \symbf{\theta}} = 2 \cdot \left[\underbrace{\frac{1}{T} \sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}}_{\frac{\partial \hat{\symbf{m}}_T(\hat{\symbf{\theta}}(\symbf{W}_T))}{\partial \symbf{\theta}}}\right]' \symbf{W}_T \left[\underbrace{\frac{1}{T} \sum_{t=1}^{T} \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}_{\hat{\symbf{m}}_T(\hat{\symbf{\theta}}(\symbf{W}_T))}\right] = 0_{a \times 1}$$
+
+. . .
+
+- Even for a fixed $\symbf{W}_T$, mild conditions guarantee a consistent estimator;
+- See Newey and McFadden (1994) for all details you would ever want to know;
+- The proofs of consistency are fairly similar to the consistency of the ML estimator;
+
+. . .
+
+- From here on, I will assume that $\hat{\symbf{\theta}}(\symbf{W}_T) \xrightarrow{p} \symbf{\theta_0}$. We will carefully study the asymptotic distribution
+- Easy to generalize this to the case of a convergent sequence of weighting matrices;
+
+##  {.standout}
+
+Questions?
+
+# Asymptotic Theory
+
+- Our goal is to derive the asymptotic distribution of $\hat{\symbf{\theta}}(\symbf{W}_T)$;
+- Notice that we haven't really said anything about the sampling of $\symbf{w}_t$ yet;
+
+. . .
+
+- Recall that $\hat{\symbf{m}}_T(\symbf{\theta}, \mathcal{W}_T) = \frac{1}{T} \sum_{t=1}^{T} \symbf{h}(\symbf{\theta}, \symbf{w}_t)$;
+- Let's denote as $\hat{m}_{i,T}(\symbf{\theta}, \mathcal{W}_T)$ the $i$-th element of the sample analog $\hat{\symbf{m}}_T(\symbf{\theta}, \mathcal{W}_T)$;
+- We assume that each entry is continuously differentiable with respect to $\symbf{\theta}$;
+- Also denote as $\hat{\symbf{\theta}}_T$ the argmin for a fixed $\symbf{W}_T$ to ease notation;
+
+. . .
+
+- We apply the mean value theorem to each entry of $\hat{\symbf{m}}_T(\symbf{\theta}, \mathcal{W}_T)$:
+$$
+\hat{m}_{i,T}(\hat{\symbf{\theta}}_T, \mathcal{W}_T) = \hat{m}_{i,T}(\symbf{\theta_0}, \mathcal{W}_T) + \left[\frac{\partial \hat{m}_{i,T}(\tilde{\symbf{\theta}}_{i, T}, \mathcal{W}_T)}{\partial \symbf{\theta}}\right]' (\hat{\symbf{\theta}}_T - \symbf{\theta_0})
+$$
+
+where $\tilde{\symbf{\theta}}_{i,T}$ is a point between $\hat{\symbf{\theta}}_T$ and $\symbf{\theta_0}$;
+
+## Asymptotic Theory
+
+- If we do this operation for all $i = 1, ..., r$ and stack the results, we can write:
+$$
+\hat{\symbf{m}}_T(\hat{\symbf{\theta}}_T, \mathcal{W}_T) = \hat{\symbf{m}}_T(\symbf{\theta_0}, \mathcal{W}_T) + \symbf{D}_T'(\hat{\symbf{\theta}}_T - \symbf{\theta_0}), \qquad \symbf{D}_T' \equiv \begin{bmatrix}
+\frac{\partial \hat{m}_{1,T}(\tilde{\symbf{\theta}}_{1, T}, \mathcal{W}_T)}{\partial \symbf{\theta'}} \\
+\vdots \\
+\frac{\partial \hat{m}_{r,T}(\tilde{\symbf{\theta}}_{r, T}, \mathcal{W}_T)}{\partial \symbf{\theta'}}
+\end{bmatrix}
+$$
+
+- In general, $\symbf{D}_T$ is **not** equal to the Jacobian of $\hat{\symbf{m}}_T(\hat{\symbf{\theta}}_T, \mathcal{W}_T)$. Why?
+
+. . .
+
+- But each $\tilde{\symbf{\theta}}_{i, T}$ is between $\hat{\symbf{\theta}}_T$ and $\symbf{\theta_0}$. Since $\hat{\symbf{\theta}}_T \xrightarrow{p} \symbf{\theta_0}$, we have that $\tilde{\symbf{\theta}}_{i, T} \xrightarrow{p} \symbf{\theta}_{i,0}$ for all $i$;
+- Now we assume that $\symbf{D}_T \xrightarrow{p} \symbf{D}_{a\times r} \equiv \frac{\partial \symbf{m}(\symbf{\theta})}{\partial \symbf{\theta'}}|_{\symbf{\theta} = \symbf{\theta_0}}$, which is full-column rank;
+
+. . .
+
+- Exchanging differentiation and expectation is possible if we assume a certain uniform convergence -- see Newey and McFadden (1994);
+
+## Asymptotic Theory
+
+- Now we multiply both sides by $\left[\underbrace{\frac{1}{T} \sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}}_{\frac{\partial \hat{\symbf{m}}_T(\hat{\symbf{\theta}}(\symbf{W}_T))}{\partial \symbf{\theta}}}\right]' \symbf{W}_T$ and use the FOC to get:
+  
+
+```{=latex}
+\begin{equation*}
+\small
+\begin{aligned}
+\left[\frac{1}{T}\sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}\right]' \symbf{W}_T \hat{\symbf{m}}_T(\hat{\symbf{\theta}}_T, \mathcal{W}_T)
+&= \left[\frac{1}{T}\sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}\right]' \symbf{W}_T \hat{\symbf{m}}_T(\symbf{\theta_0}, \mathcal{W}_T) \\
+&\quad + \left[\frac{1}{T}\sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}\right]' \symbf{W}_T \symbf{D}_T'(\hat{\symbf{\theta}}_T - \symbf{\theta_0})
+\end{aligned}
+\end{equation*}
+```
+
+. . .
+
+- But the LHS is zero by the FOC!!!
+
+## Asymptotc Theory
+Rearrange the previous expression to get:
+
+```{=latex}
+\begin{equation*}
+\small
+\begin{aligned}
+\sqrt{T}(\hat{\symbf{\theta}}_T - \symbf{\theta_0}) &= -\left\{\left[\frac{1}{T}\sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}\right]' \symbf{W}_T \symbf{D}_T'\right\}^{-1} \\
+&\qquad \times \left[\frac{1}{T}\sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}\right]' \symbf{W}_T \sqrt{T}\cdot \hat{\symbf{m}}_T(\symbf{\theta_0}, \mathcal{W}_T)
+\end{aligned}
+\end{equation*}
+```
+
+. . .
+
+- We assume that $\left[\frac{1}{T}\sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}\right] \xrightarrow{p} \symbf{D}_{a \times r}$. Why isn't this trivial?
+  
+. . .
+
+- We will also assume that $\symbf{W}_T \rightarrow \symbf{W}$, which is positive definite;
+- Then, by Slutsky's theorem, we have that
+$$
+\left[\frac{1}{T}\sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}\right] ' \symbf{W}_T \symbf{D}_T' \xrightarrow{p} \symbf{D}' \symbf{W} \symbf{D}
+$$
+
+## Asymptotic Theory
+- Now we need to study the distribution of $\sqrt{T} \cdot \hat{\symbf{m}}_T(\symbf{\theta_0}, \mathcal{W}_T) = \frac{1}{\sqrt{T}} \sum_{t=1}^{T} \symbf{h}(\symbf{\theta_0}, \symbf{w}_t)$;
+- Notice that $\mathbb{E}[\symbf{h}(\symbf{\theta_0}, \symbf{w}_t)] = 0$. Why?
+
+. . .
+
+We will now assume that
+$$
+\frac{1}{\sqrt{T}} \sum_{t=1}^{T} \symbf{h}(\symbf{\theta_0}, \symbf{w}_t) \xrightarrow{d} N(0, \symbf{S})
+$$
+
+- But what is $\symbf{S}$?
+
+. . .
+
+- If $\{\symbf{w}_t\}$ is an i.i.d. sequence, then we use the classical CLT to get:
+$$\symbf{S} = \mathbb{E}[\symbf{h}(\symbf{\theta_0}, \symbf{w}_t) \symbf{h}(\symbf{\theta_0}, \symbf{w}_t)']$$
+
+. . .
+
+- The same result holds true if $\left\{\symbf{w}_t\right\}$ is a Martingale Difference Sequence;
+
+## Asymptotic Theory
+- In the general case of dependent data, we have to use a more general version of the CLT;
+- Under the conditions of one of theorems we covered for correlated series, we have:
+$$\symbf{S} = \sum_{j=-\infty}^{\infty} \text{Cov}(\symbf{h}(\symbf{\theta_0}, \symbf{w}_t), \symbf{h}(\symbf{\theta_0}, \symbf{w}_{t-j})) = \sum\limits_{j=-\infty}^{\infty}\mathbb{E}\left[\symbf{h}(\symbf{\theta_0}, \symbf{w}_t) \symbf{h}(\symbf{\theta_0}, \symbf{w}_{t-j})'\right]$$
+
+. . .
+
+In any case we have that 
+$$
+\sqrt{T}(\hat{\symbf{\theta}}_T - \symbf{\theta_0}) \xrightarrow{d} N\left(0, (\symbf{D}' \symbf{W} \symbf{D})^{-1} \symbf{D}' \symbf{W} \symbf{S} \symbf{W} \symbf{D} (\symbf{D}' \symbf{W} \symbf{D})^{-1}\right)
+$$
+
+. . .
+
+- Very important: the asymptotic variance depends on the weighting matrix $\symbf{W}$!;
+- Consistency holds for any positive definite $\symbf{W}$;
+
+##  {.standout}
+
+Questions?
+
+
+# The Optimal Weighting Matrix
+
+## A Thought Experiment
+Let's do a thought experiment:
+
+- Suppose you want to know where an enemy plane is and you have independent radars;
+- They are both consistent "estimators", but radar 1 more noise than radar 2;
+- What's the optimal thing to do? Use only information from radar 1? Radar 2? Both?
+
+. . .
+
+- Ok, you'd probably use both radars, but give more weight to radar 2 (less noisy);
+- This is exactly the idea behind the optimal weighting matrix in GMM!
+- How far each sample moment condition is from zero = your radar when looking for $\symbf{\theta}_0$;
+- How you combine them = weighting matrix $\symbf{W}$;
+
+## How to combime the radars?
+- Intuition: give more weight to "more precise" moment conditions;
+- But how to measure precision?
+- Answer: variance-covariance matrix of the moment conditions;
+- If moment conditions are uncorrelated, just use inverse of variances;
+- If correlated, use inverse of variance-covariance matrix;
+- This is exactly what Hansen (1982) proposed!
+- Notice that nothing related to this intuition is related to i.i.d. vs dependent data;
+
+## Let's Do The Math
+- Recall that the asymptotic variance of the GMM estimator is:
+$$
+\symbf{V} \equiv (\symbf{D}' \symbf{W} \symbf{D})^{-1} \symbf{D}' \symbf{W} \symbf{S} \symbf{W} \symbf{D} (\symbf{D}' \symbf{W} \symbf{D})^{-1}
+$$
+
+- In case $\symbf{W} = \symbf{S}^{-1}$, we have:
+$$
+\symbf{V^*} = (\symbf{D}' \symbf{S}^{-1} \symbf{D})^{-1} \symbf{D}' \symbf{S}^{-1} \symbf{S} \symbf{S}^{-1} \symbf{D} (\symbf{D}' \symbf{S}^{-1} \symbf{D})^{-1} = (\symbf{D}' \symbf{S}^{-1} \symbf{D})^{-1}
+$$
+
+- How can we compare how "large" are $\symbf{V}$ and $\symbf{V^*}$?
+
+. . .
+
+- We will write "$V \geq V^*$" if, and only if, $\symbf{V} - \symbf{V^*}$ is positive semidefinite;
+
+## Let's Do The Math
+
+```{=tex}
+\begin{align*}
+\symbf{V} - \symbf{V^*} &= (\symbf{D}' \symbf{W} \symbf{D})^{-1} \symbf{D}' \symbf{W} \symbf{S} \symbf{W} \symbf{D} (\symbf{D}' \symbf{W} \symbf{D})^{-1} - (\symbf{D}' \symbf{S}^{-1} \symbf{D})^{-1} \\
+&= (\symbf{D}' \symbf{W} \symbf{D})^{-1} \left[\symbf{D}' \symbf{W} \symbf{S} \symbf{W} \symbf{D} - \left(\symbf{D}' \symbf{W} \symbf{D}\right) \symbf{(D}' \symbf{S}^{-1} \symbf{D})^{-1} \left(\symbf{D}' \symbf{W} \symbf{D}\right)\right] (\symbf{D}' \symbf{W} \symbf{D})^{-1}\\
+&=(\symbf{D}' \symbf{W} \symbf{D})^{-1} \symbf{D}' \symbf{W} \left[\symbf{S} - \symbf{D}\left(\symbf{D}' \symbf{S}^{-1} \symbf{D}\right)^{-1} \symbf{D}'\right] \symbf{W} \symbf{D} (\symbf{D}' \symbf{W} \symbf{D})^{-1}
+\end{align*}
+```
+
+. . .
+
+- Notice that we can write $\symbf{S} = \symbf{S}^{1/2}\symbf{S}^{1/2}$. Why is this well-defined?
+
+. . .
+
+- Define $\symbf{A} \equiv (\symbf{D}' \symbf{W} \symbf{D})^{-1} \symbf{D}' \symbf{W} \symbf{S}^{1/2}$;
+
+. . .
+
+- Now we write:
+
+```{=latex}
+\begin{equation*}
+\symbf{V} - \symbf{V^*} = \symbf{A} \left[\symbf{I} - \symbf{S}^{-1/2} \symbf{D} (\symbf{D}' \symbf{S}^{-1} \symbf{D})^{-1} \symbf{D}' \symbf{S}^{-1/2}\right] \symbf{A}'
+\end{equation*}
+```
+
+## The Magic of Idempotent Matrices
+- It is enough now to show that $\left[\symbf{I} - \symbf{S}^{-1/2} \symbf{D} (\symbf{D}' \symbf{S}^{-1} \symbf{D})^{-1} \symbf{D}' \symbf{S}^{-1/2}\right]$ is positive semidefinite;
+
+. . .
+
+- Let $\symbf{B} \equiv \symbf{S}^{-1/2} \symbf{D} (\symbf{D}' \symbf{S}^{-1} \symbf{D})^{-1} \symbf{D}' \symbf{S}^{-1/2}$;
+- Notice that $\symbf{B}$ is idempotent, i.e., $\symbf{B}^2 = \symbf{B}$. What do we know about idempotent matrices?
+
+. . .
+
+- For any idempotent matrix $\symbf{B}$, all eigenvalues are either 0 or 1;
+- Therefore, all eigenvalues of $\symbf{I} - \symbf{B}$ are either 0 or 1;
+- This implies that $\symbf{I} - \symbf{B}$ is positive semidefinite;
+
+. . .
+
+- Another useful factorization is $(\symbf{I} - \symbf{B}) = (\symbf{I} - \symbf{B}^2) = (\symbf{I} - \symbf{B})(\symbf{I} - \symbf{B}) = (\symbf{I} - \symbf{B})^2$;
+
+. . .
+
+In any case: $\symbf{V} - \symbf{V^*} = \symbf{A} (\symbf{I} - \symbf{B}) \symbf{A}' \geq 0 \implies \symbf{W}=\symbf{S}^{-1}$ is the optimal weighting matrix! 
+
+##  {.standout}
+
+Questions?
+
+## Wrap-Up
+- The GMM estimator is the minimizer of a quadratic form of sample moment conditions;
+- We derived its asymptotic distribution under general conditions;
+- We showed that the optimal weighting matrix is the inverse of the covariance matrix of the moment conditions;
+- Consistency does _not_ require the optimal weighting matrix;
+  
+. . .
+
+- Major problem: we do not know $\symbf{S}$ in practice...
+- Next class: how to implement GMM in practice?
+
+
+
+
+
+##  {.standout}
+
+The End
+
+## References
+
+- Checkout Chapter 14 from Hamilton's book;
+- Also checkout Chapter 13 from Hansen's book;
