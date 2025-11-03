@@ -250,7 +250,7 @@ $$
 ## What's the right rate?
 - Putting it together:
 $$
-\frac{1}{\sigma^2 T}\sum_{t=1}^{T}y_{t-1}u_t \xrightarrow{d} \frac{1}{2}(\chi^2 - 1);
+\frac{1}{\sigma^2 T}\sum_{t=1}^{T}y_{t-1}u_t \xrightarrow{d} \frac{1}{2}(\chi^2_{1} - 1);
 $$
 
 - The numerator is $O_p(T)$ and the limiting distribution is non-normal;
@@ -513,6 +513,9 @@ $$
 - When $p=0$, it's called an **ADL(q)** model;
 - Potentially quite useful for forecasting;
 - On its own, essentially silent about causality. You typically need a model to make sense of these coefficients;
+  
+. . .
+
 - Estimation can be done by OLS;
 - Inference on coefficients should probably use Newey-West standard errors. Why?
 
@@ -521,6 +524,9 @@ $$
 - Consider $y_t = \alpha + \beta_0 x_t + \beta_1 x_{t-1} + \ldots + \beta_q x_{t-q}+ \varepsilon_t$
 - Notice that if $x_t$ changes, it will potentially impact $y_t, y_{t+1}, ..., y_{t+q}$ directly;
 - There might be indirect effects too if $x_t$ is persistent;
+
+. . .
+
 - We are frequently interested in estimating $\beta_0 + \beta_1 + \ldots + \beta_q \implies$ a "long-run" effect;
 - You can test hypotheses about this sum using linear hypothesis tests;
 - The issue here is that $x_t$ might induce change in $x_{t+1}$, $x_{t+2}$, etc;
@@ -621,15 +627,11 @@ $$
 
 ##  {.standout}
 
-Questions?
-
-##  {.standout}
-
 The End
 
 ## References
 
 - Chapter 11 on Hamilton's book discusses a bit of Granger Causality;
 - Sections 14.40 and 14.44 on Hansen's book discuss AR-DL models and Granger Causality;
-- See the Chapter 16 on Hansens book about unit roots;
+- See the Chapter 16 on Hansen's book about unit roots;
 - Chapter 17 on Hamilton's book discusses non-stationary time series and unit roots;
