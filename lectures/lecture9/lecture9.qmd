@@ -2,7 +2,7 @@
 title: "Lecture 9: The GMM Estimator - Part I"
 author: "Raul Riva"
 institute: "FGV EPGE"
-date: "2025-10-01"
+date: "2025-11-01"
 date-format: "MMMM, YYYY"
 format: 
     beamer:
