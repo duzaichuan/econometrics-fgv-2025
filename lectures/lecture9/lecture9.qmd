@@ -27,7 +27,7 @@ highlight-style: github
 **The Model:**
 
 A representative agent maximizes expected lifetime utility:
-$$\max\limits_{\{C_t\}_{t}^{\inf}} E_0 \sum_{t=0}^{\infty} \beta^t u(C_t)$$
+$$\max\limits_{\{C_t\}_{t}^{\infty}} E_0 \sum_{t=0}^{\infty} \beta^t u(C_t)$$
 subject to the budget constraint:
 $$W_{t+1} = (1+r_{t+1})(W_t - C_t)$$
 where:
