@@ -143,12 +143,12 @@ $$\hat{\symbf{m}}_T(\symbf{\theta}, \mathcal{W}_T) = \frac{1}{T} \sum_{t=1}^{T} 
 
 - Let $\symbf{W}_T$ be a $r\times r$ positive definite matrix;
 - Consider the following scalar:
-$$Q_T(\symbf{\theta}, \mathcal{W}_T) \equiv \hat{\symbf{m}}_T(\symbf{\theta}, \mathcal{W}_T)' \symbf{W}_T \hat{\symbf{m}}_T\,(\symbf{\theta}, \mathcal{W}_T)$$
-- Obviously, $Q_T(\symbf{\theta}, \mathcal{W}_T) \geq 0$ for all $\symbf{\theta}$;
+$$Q_T(\symbf{\theta}, \symbf{W}_T) \equiv \hat{\symbf{m}}_T(\symbf{\theta}, \mathcal{W}_T)' \symbf{W}_T \hat{\symbf{m}}_T\,(\symbf{\theta}, \mathcal{W}_T)$$
+- Obviously, $Q_T(\symbf{\theta}, \symbf{W}_T) \geq 0$ for all $\symbf{\theta}$;
 - Hansen (1982) proposed minimizing this criterion function to estimate $\symbf{\theta}_0$:
-$$\hat{\symbf{\theta}}(\symbf{W}_T) \equiv \arg \min_{\symbf{\theta} \in \Theta} Q_T(\symbf{\theta}, \mathcal{W}_T)$$
+$$\hat{\symbf{\theta}}(\symbf{W}_T) \equiv \arg \min_{\symbf{\theta} \in \Theta} Q_T(\symbf{\theta}, \symbf{W}_T)$$
 - The argmin depends on the weighting matrix $\symbf{W}_T$, by the way;
-- Intuition: if $\symbf{\theta} \approx \symbf{\theta}_0$, then $Q_T(\symbf{\theta}, \mathcal{W}_T) \approx 0$ by the LLN if $\symbf{h(.,.)}$ is smooth enough;
+- Intuition: if $\symbf{\theta} \approx \symbf{\theta}_0$, then $Q_T(\symbf{\theta}, \symbf{W}_T) \approx 0$ by the LLN if $\symbf{h(.,.)}$ is smooth enough;
 
 ##  {.standout}
 
@@ -156,7 +156,7 @@ Questions?
 
 ## The First-Order Conditions
 For a differentiable $\symbf{h}(\symbf{\theta}, \symbf{w}_t)$, the FOC for the GMM estimator is:
-$$\frac{\partial Q_T(\hat{\symbf{\theta}}(\symbf{W}_T), \mathcal{W}_T)}{\partial \symbf{\theta}} = 2 \cdot \left[\underbrace{\frac{1}{T} \sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}}_{\frac{\partial \hat{\symbf{m}}_T(\hat{\symbf{\theta}}(\symbf{W}_T))}{\partial \symbf{\theta}}}\right]' \symbf{W}_T \left[\underbrace{\frac{1}{T} \sum_{t=1}^{T} \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}_{\hat{\symbf{m}}_T(\hat{\symbf{\theta}}(\symbf{W}_T))}\right] = 0_{a \times 1}$$
+$$\frac{\partial Q_T(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{W}_T)}{\partial \symbf{\theta}} = 2 \cdot \left[\underbrace{\frac{1}{T} \sum_{t=1}^{T} \frac{\partial \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}{\partial \symbf{\theta}}}_{\frac{\partial \hat{\symbf{m}}_T(\hat{\symbf{\theta}}(\symbf{W}_T))}{\partial \symbf{\theta}}}\right]' \symbf{W}_T \left[\underbrace{\frac{1}{T} \sum_{t=1}^{T} \symbf{h}(\hat{\symbf{\theta}}(\symbf{W}_T), \symbf{w}_t)}_{\hat{\symbf{m}}_T(\hat{\symbf{\theta}}(\symbf{W}_T))}\right] = 0_{a \times 1}$$
 
 . . .
 

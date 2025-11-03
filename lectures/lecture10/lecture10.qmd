@@ -27,7 +27,7 @@ highlight-style: github
 Last time we covered:
 
 - The GMM framework: moment conditions $\mathbb{E}[\symbf{h}(\symbf{\theta}_0, \symbf{w}_t)] = 0$
-- The GMM estimator: $\hat{\symbf{\theta}}(\symbf{W}_T) = \arg \min_{\symbf{\theta}} Q_T(\symbf{\theta}, \mathcal{W}_T)$ for a general convergence sequence $\{\symbf{W}_T\}$;
+- The GMM estimator: $\hat{\symbf{\theta}}(\symbf{W}_T) = \arg \min_{\symbf{\theta}} Q_T(\symbf{\theta}, \symbf{W}_T)$ for a general convergence sequence $\{\symbf{W}_T\}$;
 - Asymptotic distribution: $\sqrt{T}(\hat{\symbf{\theta}}_T - \symbf{\theta_0}) \xrightarrow{d} N(0, \symbf{V})$
 
 where the asymptotic variance is:
