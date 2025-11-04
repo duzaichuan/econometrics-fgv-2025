@@ -230,12 +230,12 @@ $$
 ```
 
 ## The Conditional Log-Likelihood Function
-- From here, we can write the conditional log-likelihood function:
+- From here, we can write the conditional log-likelihood function (up to a constant):
 ```{=latex}
 \vspace{-0.5cm}
 \begin{align*}
 \log{\left(f_{y_t, \ldots, y_1 | \varepsilon_{-q+1} = \varepsilon_{-q+2} = \ldots = \varepsilon_{0} = 0}(\symbf{y}; \symbf{\Theta})\right)} &= \sum_{t=q+1}^T \log{\left(f_{y_t | \varepsilon_{t-1}, \ldots, \varepsilon_{t-q}}(y_t | \varepsilon_{t-1}, \ldots, \varepsilon_{t-q}; \symbf{\Theta})\right)}\\
-&= - \sum_{t=1}^T \frac{(\varepsilon_t)^2}{2\sigma^2} - (T-q) \log{(\sigma)}
+&= - \sum_{t=1}^T \frac{(\varepsilon_t)^2}{2\sigma^2} - T\cdot \log{(\sigma)}
 \end{align*}
 ```
 
