@@ -1,0 +1,214 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=2cm]{geometry}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\linespread{1.3}
+\parskip=12pt
+\parindent=0pt
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{mathpazo}
+\usepackage{amsfonts}
+
+\usepackage[dvipsnames]{xcolor}
+\definecolor{slateblue}{RGB}{45, 62, 80}
+\definecolor{FGVBlue}{RGB}{0, 114, 188}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=FGVBlue,
+	urlcolor=FGVBlue,
+	citecolor=FGVBlue,
+}
+% Defining the question styles
+\theoremstyle{definition}
+\newtheorem{prob}{Problem}
+
+% Custom commands
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\symbf}[1]{\boldsymbol{#1}}
+
+% Command to start a new section with the word "Problem" and enumerate automatically
+\newcounter{problem}
+\renewcommand{\theproblem}{\arabic{problem}}
+
+\newcommand{\problem}[1]{
+	\stepcounter{problem}
+	\section*{Problem \theproblem{} -- (points: #1)}
+}
+
+\begin{document}
+	\begin{center}
+		{\LARGE{\textbf{Problem Set IV}}}\\
+		\vspace{0.2cm}
+		Econometrics I - \textcolor{FGVBlue}{FGV EPGE}\\
+		Instructor: Raul Guarini Riva \\
+		TA: Taric Latif Padovani
+	\end{center}
+
+
+\problem{3}
+In the next questions, you will be asked to derive CLTs for the sample mean under different assumptions. You should decide what type of theorem to use in each case and \textit{impose the assumptions you think you need}. You have less assumptions than you need on purpose. Justify your choices.
+
+\begin{enumerate}[a)]
+    \item Suppose ${X_t}$ is an $\alpha$-mixing weakly stationary process with $\mathbb{E}[X_t] = 0$ and covariance function $\gamma(h)$.
+    Let $Y_t = X_t + 0.5_{t-1}$. Derive a CLT for $\frac{1}{T}\sum_{t=2}^{T} Y_t$.
+
+    \item Suppose that $X_t$ is an i.i.d. scalar sequence with zero mean and finite fourth moment. If $Y_t \equiv X_t X_{t-11}$, derive a CLT for $\frac{1}{T}\sum_{t=2}^{T} Y_t$
+\end{enumerate}
+
+\problem{1}
+During the derivation of the Augmented Dickey-Fuller test, we used a trick and invoked a result without proving it. You will prove it now. Consider $p$ coefficients from an AR($p$) process given by $\phi_1, \phi_2, \ldots, \phi_p$. Consider the following $p \times p$ matrix $\symbf{B}$:
+$$
+\symbf{B} = \begin{bmatrix}
+1 & 0 & 0 & \cdots & 0\\
+1 & -1 & 0 & \cdots & 0\\
+0 & 1 & -1 & \cdots & 0\\
+\vdots & \vdots & \vdots & \ddots & \vdots\\
+0 & 0 & \cdots & 1 & -1
+\end{bmatrix}
+$$
+
+Let $\symbf{y}_{t-1} = (y_{t-1}, y_{t-2}, \ldots, y_{t-p})'$ be a $p \times 1$ vector. Show that:
+$$
+\symbf{B} \symbf{y}_{t-1} = \begin{bmatrix}
+y_{t-1}\\
+\Delta y_{t-1}\\
+\Delta y_{t-2}\\
+\vdots\\
+\Delta y_{t-p+1}
+\end{bmatrix}
+$$
+
+Furthermore, let $\phi = (\phi_1, \phi_2, \ldots, \phi_p)'$ and assume that there exist scalars $\rho \in \mathbb{R}$ and a vector $\beta = (\beta_1, \beta_2, \ldots, \beta_{p-1})' \in \mathbb{R}^{p-1}$ such that:
+$$
+\phi = \symbf{B}' \begin{bmatrix}
+\rho\\
+\beta
+\end{bmatrix}
+$$
+
+Show that this transformation implies:
+\begin{enumerate}[(a)]
+	\item $\rho = \phi_1 + \phi_2 + \cdots + \phi_p = \sum_{j=1}^{p} \phi_j$;
+	\item An AR($p$) process can be equivalently written as:
+	$$
+	y_t = \rho y_{t-1} + \beta_1 \Delta y_{t-1} + \beta_2 \Delta y_{t-2} + \cdots + \beta_{p-1} \Delta y_{t-p+1} + \varepsilon_t
+	$$
+	where $\varepsilon_t$ is the innovation term.
+\end{enumerate}
+
+\problem{2}
+Consider an AR-DL(1,2) model where $y_t$ depends on its own lag and on current and lagged values of an exogenous variable $x_t$:
+$$
+y_t = \alpha + \rho y_{t-1} + \beta_0 x_t + \beta_1 x_{t-1} + \beta_2 x_{t-2} + \varepsilon_t
+$$
+where $|\rho| < 1$ ensures stationarity, and $\E[\varepsilon_t | y_{t-1}, y_{t-2}, \ldots, x_t, x_{t-1}, \ldots] = 0$.
+
+\begin{enumerate}[(a)]
+	\item \textbf{Impact Multiplier}: Suppose that at time $t=0$, the system is in equilibrium with $y_t = \bar{y}$ for all $t \leq 0$ and $x_t = \bar{x}$ for all $t \leq 0$. At time $t=1$, there is a one-time shock such that $x_1 = \bar{x} + 1$ (i.e., $x$ increases by one unit), and then $x_t = \bar{x}$ for all $t \geq 2$.
+	
+	Compute the \textit{impact multiplier}, defined as the immediate effect on $y_1$:
+	$$
+	\frac{\partial y_1}{\partial x_1} = ?
+	$$
+	
+	\item \textbf{Dynamic Multipliers}: Continuing from part (a), compute the effect of this shock on $y_t$ for $t = 2, 3, 4$. Show that:
+	\begin{align*}
+	y_2 - \bar{y} &= \rho \beta_0 + \beta_1 \\
+	y_3 - \bar{y} &= \rho^2 \beta_0 + \rho \beta_1 + \beta_2 \\
+	y_4 - \bar{y} &= \rho^3 \beta_0 + \rho^2 \beta_1 + \rho \beta_2
+	\end{align*}
+	
+	What is the general pattern here?
+	
+	\item \textbf{Long-Run Multiplier}: The \textit{long-run multiplier} is defined as the cumulative effect of a permanent one-unit increase in $x$ on the long-run equilibrium value of $y$.
+	
+	Suppose instead that starting at $t=1$, $x$ increases permanently from $\bar{x}$ to $\bar{x} + 1$ (i.e., $x_t = \bar{x} + 1$ for all $t \geq 1$). Let $y^*$ denote the new long-run equilibrium value of $y$. Show that:
+	$$
+	y^* = \frac{\alpha + (\beta_0 + \beta_1 + \beta_2)(\bar{x} + 1)}{1 - \rho}
+	$$
+	
+	and therefore the long-run multiplier is:
+	$$
+	\frac{dy^*}{dx} = \frac{\beta_0 + \beta_1 + \beta_2}{1 - \rho}
+	$$
+	
+	\textit{Hint}: In the new steady state, $y_t = y_{t-1} = y^*$ and $x_t = x_{t-1} = x_{t-2} = \bar{x} + 1$.
+	
+	\item \textbf{General AR-DL(1,q) Case}: Consider the more general AR-DL(1,q) model:
+	$$
+	y_t = \alpha + \rho y_{t-1} + \sum_{j=0}^{q} \beta_j x_{t-j} + \varepsilon_t
+	$$
+	
+	Using the same reasoning as in part (c), show that the long-run multiplier is:
+	$$
+	\text{LRM} = \frac{\sum_{j=0}^{q} \beta_j}{1 - \rho}
+	$$
+	
+	Interpret this result: why does the autoregressive coefficient $\rho$ amplify (if $\rho > 0$) or dampen (if $\rho < 0$) the long-run effect relative to the sum of the contemporaneous and lagged coefficients on $x$?
+\end{enumerate}
+
+\problem{3}
+Take the linear model $Y_t = X_t'\beta + e_t$ with $\E[Z_te_t] = 0$ for some variable $Z_t \in \mathbb{R}^\ell$, where $Y_t \in \mathbb{R}$ and $X_t \in \mathbb{R}^{k}$. Consider the GMM estimator $\hat{\beta}$ of $\beta$ and assume $\ell \geq k$. Let $J = T\hat{m}_T(\hat{\beta})'\hat{\symbf{S}}^{-1}\hat{m}_T(\hat{\beta})$ be the $J$-statistic for the test regarding overidentifying restrictions. $\symbf{S}$ is the asymptotic variance of the moment conditions and $\hat{\symbf{S}}$ is a consistent estimator. 
+
+We also let $\symbf{X}_{T\times k} \equiv (X_1^{\prime}, \ldots, X_T^{\prime})^{\prime}$ and $\symbf{Z}_{T\times \ell} \equiv (Z_1^{\prime}, \ldots, Z_T^{\prime})^{\prime}$. Finally, $\symbf{I}_\ell$ is the $\ell \times \ell$ identity matrix. We will now show that $J \xrightarrow{d} \chi^2_{\ell-k}$ as $T \to \infty$ by demonstrating the following items:
+
+\begin{enumerate}[(a)]
+	\item Argue that we can write $\symbf{S}^{-1} = \symbf{C}\symbf{C}'$ and $\symbf{S} = \symbf{C}'^{-1}\symbf{C}^{-1}$ for some matrix $\symbf{C}$.
+	
+	\item Show that we can write $J = T\left(\symbf{C}'\hat{m}_T(\hat{\beta})\right)' \left(\symbf{C}'\hat{\symbf{S}}\symbf{C}\right)^{-1} \symbf{C}'\hat{m}_T(\hat{\beta})$.
+	
+	\item Show that $\symbf{C}'\hat{m}_T(\hat{\beta}) = \symbf{A}_T\symbf{C}'\hat{m}_T(\beta)$ where $\hat{m}_T(\beta) = \frac{1}{T}\sum\limits_{t=1}^T Z_t e_t$ and
+	$$
+	\symbf{A}_T = \symbf{I}_\ell - \symbf{C}'\left(\frac{1}{T}\symbf{Z}'\symbf{X}\right)\left[\left(\frac{1}{T}\symbf{X}'\symbf{Z}\right)\hat{\symbf{S}}^{-1}\left(\frac{1}{T}\symbf{Z}'\symbf{X}\right)\right]^{-1}\left(\frac{1}{T}\symbf{X}'\symbf{Z}\right)\hat{\symbf{S}}^{-1}\symbf{C}'^{-1}.
+	$$
+	
+	\item Show that $\symbf{A}_T \xrightarrow{p} \symbf{I}_\ell - \symbf{R}(\symbf{R}'\symbf{R})^{-1}\symbf{R}'$ where $\symbf{R} = \symbf{C}'\E[Z_tX_t']$.
+	
+	\item Show that $T^{1/2}\symbf{C}'\hat{m}_T(\beta) \xrightarrow{d} u \sim N(0, \symbf{I}_\ell)$.
+	
+	\item Show that $J \xrightarrow{d} u'\left(\symbf{I}_\ell - \symbf{R}(\symbf{R}'\symbf{R})^{-1}\symbf{R}'\right)u$.
+	
+	\item Show that $u'\left(\symbf{I}_\ell - \symbf{R}(\symbf{R}'\symbf{R})^{-1}\symbf{R}'\right)u \sim \chi^2_{\ell-k}$.
+	
+	\textit{Hint}: $\symbf{I}_\ell - \symbf{R}(\symbf{R}'\symbf{R})^{-1}\symbf{R}'$ is a projection matrix. What do we know about these matrices?
+\end{enumerate}
+
+
+\problem{2}
+You want to estimate $\mu = \mathbb{E}[Y_i]$ under the assumption that $\mathbb{E}[X_i] = 0$, where $Y_i$ and $X_i$ are scalars and observed from a random sample $\{(Y_i, X_i)\}_{i=1}^{n}$. Find an efficient GMM estimator for $\mu$. Why the information about $X_i$ might help to improve the estimation of $\mu$?
+
+\problem{2}
+In this question, we will explore the asymptotic distribution of the GMM estimator under model misspecification.
+
+The observed data is $\{Y_i, X_i, Z_i\} \in \mathbb{R} \times \mathbb{R}^k \times \mathbb{R}^\ell$, $k > 1$ and $\ell > k > 1$, $i = 1, \ldots, n$. The model assumed by the econometrician is $Y = X'\beta + e$ with $\mathbb{E}[Ze] = 0$.
+
+\begin{enumerate}
+    \item[(a)] Given a weight matrix $W > 0$ write down the GMM estimator $\hat{\beta}$ for $\beta$.
+    
+    \item[(b)] Suppose the model is misspecified. Specifically, assume that for some $\delta \neq 0$,
+    \begin{gather*}
+        e = \frac{\delta}{\sqrt{n}} + u\\
+        \mathbb{E}[u \mid Z] = 0
+    \end{gather*}
+    with $\mu_Z = \mathbb{E}[Z] \neq 0$. Show that (13.32) implies that $\mathbb{E}[Ze] \neq 0$.
+
+    \item[(c)] Express $\sqrt{n}(\hat{\beta} - \beta)$ as a function of $W$, $n$, $\delta$, and the variables $(X_i, Z_i, u_i)$.
+
+    \item[(d)] Find the asymptotic distribution of $\sqrt{n}(\hat{\beta} - \beta)$ in this case and show that it has an asymptotic bias.
+    
+    \item[(e)] Is this misspecification bias eliminated if we use the optimal weight matrix? Justify your answer.
+    
+    \item[(f)] Will this misspecifcation affect consistency?
+\end{enumerate}
+
+
+
+\end{document}
