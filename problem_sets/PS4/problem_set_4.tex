@@ -53,7 +53,7 @@
 	\end{center}
 
 
-\problem{3}
+\problem{2}
 In the next questions, you will be asked to derive CLTs for the sample mean under different assumptions. You should decide what type of theorem to use in each case and \textit{impose the assumptions you think you need}. You have less assumptions than you need on purpose. Justify your choices.
 
 \begin{enumerate}[a)]
@@ -104,7 +104,7 @@ Show that this transformation implies:
 	where $\varepsilon_t$ is the innovation term.
 \end{enumerate}
 
-\problem{2}
+\problem{1}
 Consider an AR-DL(1,2) model where $y_t$ depends on its own lag and on current and lagged values of an exogenous variable $x_t$:
 $$
 y_t = \alpha + \rho y_{t-1} + \beta_0 x_t + \beta_1 x_{t-1} + \beta_2 x_{t-2} + \varepsilon_t
@@ -155,7 +155,7 @@ where $|\rho| < 1$ ensures stationarity, and $\E[\varepsilon_t | y_{t-1}, y_{t-2
 	Interpret this result: why does the autoregressive coefficient $\rho$ amplify (if $\rho > 0$) or dampen (if $\rho < 0$) the long-run effect relative to the sum of the contemporaneous and lagged coefficients on $x$?
 \end{enumerate}
 
-\problem{3}
+\problem{2}
 Take the linear model $Y_t = X_t'\beta + e_t$ with $\E[Z_te_t] = 0$ for some variable $Z_t \in \mathbb{R}^\ell$, where $Y_t \in \mathbb{R}$ and $X_t \in \mathbb{R}^{k}$. Consider the GMM estimator $\hat{\beta}$ of $\beta$ and assume $\ell \geq k$. Let $J = T\hat{m}_T(\hat{\beta})'\hat{\symbf{S}}^{-1}\hat{m}_T(\hat{\beta})$ be the $J$-statistic for the test regarding overidentifying restrictions. $\symbf{S}$ is the asymptotic variance of the moment conditions and $\hat{\symbf{S}}$ is a consistent estimator. 
 
 We also let $\symbf{X}_{T\times k} \equiv (X_1^{\prime}, \ldots, X_T^{\prime})^{\prime}$ and $\symbf{Z}_{T\times \ell} \equiv (Z_1^{\prime}, \ldots, Z_T^{\prime})^{\prime}$. Finally, $\symbf{I}_\ell$ is the $\ell \times \ell$ identity matrix. We will now show that $J \xrightarrow{d} \chi^2_{\ell-k}$ as $T \to \infty$ by demonstrating the following items:
