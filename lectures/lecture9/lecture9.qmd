@@ -80,35 +80,6 @@ This implies:
 
 $$E[\underbrace{X_1 \cdot (Y_i - \Lambda(X_1'\beta))}_{\equiv h_{IO}(\text{parameters, data})}] = 0 \implies \mathbb{E}[h_{IO}(\text{parameters, data})] = 0$$
 
-## Example III: Mean-Variance Portfolio Choice (Part 1)
-
-**The Model:**
-
-An investor allocates wealth between a risky asset (stock) and a risk-free asset (bond). The optimal portfolio weight $w$ on the risky asset solves:
-
-$$\max_{w} \quad E[R_p] - \frac{\lambda}{2} \text{Var}(R_p)$$
-
-where:
-
-- $R_p = w \cdot r_s + (1-w) \cdot r_f$ is the portfolio return
-- $r_s$ is the risky asset return (random)
-- $r_f$ is the risk-free rate (known)
-- $\lambda$ is the risk aversion parameter (to be estimated)
-
-## Example III: Mean-Variance Portfolio Choice (Part 2)
-
-**First-order condition:**
-
-$$E[r_s - r_f] - \lambda \cdot w \cdot \text{Var}(r_s) = 0$$
-Solving for the optimal weight:
-$$w^* = \frac{E[r_s - r_f]}{\lambda \cdot \text{Var}(r_s)}$$
-
-. . .
-
-**Moment condition:**
-If we observe portfolio weights $w_i$ for individual $i$, we can use:
-$$E\left[\underbrace{w_i - \frac{E[r_s - r_f]}{\lambda \cdot \text{Var}(r_s)}}_{\equiv h_{Finance}(\text{parameters, data})}\right] = 0 \implies \mathbb{E}[h_{Finance}(\text{parameters, data})] = 0$$
-
 ## The General Framework
 - Many instances of Economics generate *moments conditions*;
 - These are restrictions data **and parameters** should be respect;
@@ -209,7 +180,7 @@ $$
 
 . . .
 
-- But each $\tilde{\symbf{\theta}}_{i, T}$ is between $\hat{\symbf{\theta}}_T$ and $\symbf{\theta_0}$. Since $\hat{\symbf{\theta}}_T \xrightarrow{p} \symbf{\theta_0}$, we have that $\tilde{\symbf{\theta}}_{i, T} \xrightarrow{p} \symbf{\theta}_{i,0}$ for all $i$;
+- But each $\tilde{\symbf{\theta}}_{i, T}$ is between $\hat{\symbf{\theta}}_T$ and $\symbf{\theta_0}$. Since $\hat{\symbf{\theta}}_T \xrightarrow{p} \symbf{\theta_0}$, we have that $\tilde{\symbf{\theta}}_{i, T} \xrightarrow{p} \symbf{\theta}_{0}$ for all $i$;
 - Now we assume that $\symbf{D}_T \xrightarrow{p} \symbf{D}_{a\times r} \equiv \frac{\partial \symbf{m}(\symbf{\theta})}{\partial \symbf{\theta'}}|_{\symbf{\theta} = \symbf{\theta_0}}$, which is full-column rank;
 
 . . .
