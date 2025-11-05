@@ -12,6 +12,7 @@ format:
         header-includes:
             - \apptocmd{\tightlist}{\setlength{\itemsep}{8pt}}{}{}
             - \usepackage{unicode-math}
+            - \usepackage{emoji}
         slide-level: 2
         urlcolor: FGVBlue
         linkcolor: slateblue
@@ -499,7 +500,15 @@ Questions?
 
 ##  {.standout}
 
-The End
+The End -- Thanks for the ride!
+
+```{=latex}
+\begin{center}
+  \scalebox{4}{\emoji{love-you-gesture}}\qquad
+  \scalebox{4}{\emoji{cowboy-hat-face}}
+\end{center}
+```
+
 
 ## References {.noframenumbering}
 
